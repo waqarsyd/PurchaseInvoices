@@ -179,6 +179,18 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="app.manifest" />
+    <None Include="Screenshots\AboutScreen.png" />
+    <None Include="Screenshots\ActivityLogScreen.png" />
+    <None Include="Screenshots\BackupScreen.png" />
+    <None Include="Screenshots\CompanyProfileScreen.png" />
+    <None Include="Screenshots\FirstRunScreen.png" />
+    <None Include="Screenshots\MainWindow.png" />
+    <None Include="Screenshots\PrintedReport.png" />
+    <None Include="Screenshots\ReportsByMonth.png" />
+    <None Include="Screenshots\ReportsScreen.png" />
+    <None Include="Screenshots\SetupScreen.png" />
+    <None Include="Screenshots\SignInScreen.png" />
+    <None Include="Screenshots\UsersScreen.png" />
     <None Include="Screenshots\CustomersScreen.png" />
     <None Include="Screenshots\InvoiceForm_NewDesign.png" />
     <None Include="Screenshots\InvoiceForm_NewDesign_Editing.png" />

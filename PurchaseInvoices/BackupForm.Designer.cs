@@ -79,7 +79,7 @@ namespace PurchaseInvoices
             this.footerPanel.Controls.Add(this.lblTarget);
             this.footerPanel.Controls.Add(this.btnClose);
             this.footerPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.footerPanel.Location = new System.Drawing.Point(0, 640);
+            this.footerPanel.Location = new System.Drawing.Point(0, 610);
             this.footerPanel.Name = "footerPanel";
             this.footerPanel.Size = new System.Drawing.Size(760, 60);
             this.footerPanel.TabIndex = 2;
@@ -113,7 +113,7 @@ namespace PurchaseInvoices
             this.contentPanel.Location = new System.Drawing.Point(0, 64);
             this.contentPanel.Name = "contentPanel";
             this.contentPanel.Padding = new System.Windows.Forms.Padding(14, 8, 14, 8);
-            this.contentPanel.Size = new System.Drawing.Size(760, 576);
+            this.contentPanel.Size = new System.Drawing.Size(760, 546);
             this.contentPanel.TabIndex = 1;
             //
             // restoreCard
@@ -129,9 +129,9 @@ namespace PurchaseInvoices
             this.restoreCard.Controls.Add(this.btnRestore);
             this.restoreCard.Dock = System.Windows.Forms.DockStyle.Fill;
             this.restoreCard.Glyph = "";
-            this.restoreCard.Location = new System.Drawing.Point(14, 204);
+            this.restoreCard.Location = new System.Drawing.Point(14, 194);
             this.restoreCard.Name = "restoreCard";
-            this.restoreCard.Size = new System.Drawing.Size(732, 364);
+            this.restoreCard.Size = new System.Drawing.Size(732, 344);
             this.restoreCard.TabIndex = 1;
             this.restoreCard.Title = "Restore";
             //
@@ -157,7 +157,7 @@ namespace PurchaseInvoices
             this.grid.MultiSelect = false;
             this.grid.Name = "grid";
             this.grid.ReadOnly = true;
-            this.grid.Size = new System.Drawing.Size(684, 108);
+            this.grid.Size = new System.Drawing.Size(684, 88);
             this.grid.TabIndex = 0;
             this.grid.SelectionChanged += new System.EventHandler(this.grid_SelectionChanged);
             //
@@ -166,7 +166,7 @@ namespace PurchaseInvoices
             this.lblFile.AutoSize = true;
             this.lblFile.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
             this.lblFile.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblFile.Location = new System.Drawing.Point(24, 202);
+            this.lblFile.Location = new System.Drawing.Point(24, 182);
             this.lblFile.Name = "lblFile";
             this.lblFile.Size = new System.Drawing.Size(68, 15);
             this.lblFile.TabIndex = 11;
@@ -177,7 +177,7 @@ namespace PurchaseInvoices
             this.hostFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.hostFile.Controls.Add(this.txtFile);
-            this.hostFile.Location = new System.Drawing.Point(24, 222);
+            this.hostFile.Location = new System.Drawing.Point(24, 200);
             this.hostFile.Name = "hostFile";
             this.hostFile.Placeholder = "Pick a backup above, or browse to a .bak file";
             this.hostFile.Size = new System.Drawing.Size(564, 36);
@@ -196,7 +196,7 @@ namespace PurchaseInvoices
             //
             this.btnBrowseFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnBrowseFile.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
-            this.btnBrowseFile.Location = new System.Drawing.Point(598, 222);
+            this.btnBrowseFile.Location = new System.Drawing.Point(598, 200);
             this.btnBrowseFile.Name = "btnBrowseFile";
             this.btnBrowseFile.Size = new System.Drawing.Size(110, 36);
             this.btnBrowseFile.TabIndex = 2;
@@ -209,9 +209,9 @@ namespace PurchaseInvoices
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblFileInfo.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblFileInfo.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblFileInfo.Location = new System.Drawing.Point(24, 262);
+            this.lblFileInfo.Location = new System.Drawing.Point(24, 238);
             this.lblFileInfo.Name = "lblFileInfo";
-            this.lblFileInfo.Size = new System.Drawing.Size(684, 34);
+            this.lblFileInfo.Size = new System.Drawing.Size(684, 32);
             this.lblFileInfo.TabIndex = 12;
             //
             // lblConfirm
@@ -219,7 +219,7 @@ namespace PurchaseInvoices
             this.lblConfirm.AutoSize = true;
             this.lblConfirm.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
             this.lblConfirm.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblConfirm.Location = new System.Drawing.Point(24, 296);
+            this.lblConfirm.Location = new System.Drawing.Point(24, 272);
             this.lblConfirm.Name = "lblConfirm";
             this.lblConfirm.Size = new System.Drawing.Size(200, 15);
             this.lblConfirm.TabIndex = 13;
@@ -228,7 +228,7 @@ namespace PurchaseInvoices
             // hostConfirm
             //
             this.hostConfirm.Controls.Add(this.txtConfirm);
-            this.hostConfirm.Location = new System.Drawing.Point(24, 316);
+            this.hostConfirm.Location = new System.Drawing.Point(24, 290);
             this.hostConfirm.Name = "hostConfirm";
             this.hostConfirm.Size = new System.Drawing.Size(300, 36);
             this.hostConfirm.TabIndex = 3;
@@ -249,7 +249,7 @@ namespace PurchaseInvoices
             this.btnRestore.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
             this.btnRestore.Glyph = "";
             this.btnRestore.Kind = PurchaseInvoices.ButtonKind.Danger;
-            this.btnRestore.Location = new System.Drawing.Point(548, 315);
+            this.btnRestore.Location = new System.Drawing.Point(548, 289);
             this.btnRestore.Name = "btnRestore";
             this.btnRestore.Size = new System.Drawing.Size(160, 38);
             this.btnRestore.TabIndex = 4;
@@ -268,7 +268,7 @@ namespace PurchaseInvoices
             this.backupCard.Glyph = "";
             this.backupCard.Location = new System.Drawing.Point(14, 8);
             this.backupCard.Name = "backupCard";
-            this.backupCard.Size = new System.Drawing.Size(732, 196);
+            this.backupCard.Size = new System.Drawing.Size(732, 186);
             this.backupCard.TabIndex = 0;
             this.backupCard.Title = "Back up";
             //
@@ -329,7 +329,7 @@ namespace PurchaseInvoices
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblBackupStatus.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
             this.lblBackupStatus.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblBackupStatus.Location = new System.Drawing.Point(24, 138);
+            this.lblBackupStatus.Location = new System.Drawing.Point(24, 134);
             this.lblBackupStatus.Name = "lblBackupStatus";
             this.lblBackupStatus.Size = new System.Drawing.Size(510, 40);
             this.lblBackupStatus.TabIndex = 12;
@@ -341,7 +341,7 @@ namespace PurchaseInvoices
             this.btnBackup.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
             this.btnBackup.Glyph = "";
             this.btnBackup.Kind = PurchaseInvoices.ButtonKind.Primary;
-            this.btnBackup.Location = new System.Drawing.Point(548, 139);
+            this.btnBackup.Location = new System.Drawing.Point(548, 135);
             this.btnBackup.Name = "btnBackup";
             this.btnBackup.Size = new System.Drawing.Size(160, 38);
             this.btnBackup.TabIndex = 2;
@@ -353,7 +353,7 @@ namespace PurchaseInvoices
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.FromArgb(243, 245, 250);
-            this.ClientSize = new System.Drawing.Size(760, 700);
+            this.ClientSize = new System.Drawing.Size(760, 670);
             this.Controls.Add(this.contentPanel);
             this.Controls.Add(this.footerPanel);
             this.Controls.Add(this.headerPanel);

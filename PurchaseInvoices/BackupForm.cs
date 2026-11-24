@@ -25,7 +25,7 @@ namespace PurchaseInvoices
         public BackupForm(string connectionString)
         {
             InitializeComponent();
-            Theme.StyleWindow(this, 700, 640);
+            Theme.StyleWindow(this, 700, 620);
             this.connectionString = connectionString;
             database = DatabaseBackup.TargetDatabase(connectionString);
             local = DatabaseBackup.IsLocalServer(connectionString);

@@ -34,11 +34,11 @@ namespace PurchaseInvoices
             cboRole.DropDownWidth = Theme.S(420);
             btnSave.BusyText = "Saving…";
             grid.AutoGenerateColumns = false;
-            AddColumn("UserName", "User name", 22);
-            AddColumn("FullName", "Full name", 30);
-            AddColumn("Role", "Role", 13);
-            AddColumn("Status", "Status", 15);
-            AddColumn("LastSignIn", "Last sign-in", 20);
+            AddColumn("UserName", "User name", 19);
+            AddColumn("FullName", "Full name", 26);
+            AddColumn("Role", "Role", 11);
+            AddColumn("Status", "Status", 21);
+            AddColumn("LastSignIn", "Last sign-in", 23);
         }
 
         public bool CurrentUserChanged { get; private set; }
