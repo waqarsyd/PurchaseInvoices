@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
-using System.Data.SqlClient;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Globalization;
@@ -17,7 +16,7 @@ namespace PurchaseInvoices
 {
     public partial class InvoiceForm : Form
     {
-        SqlConnection con; //--- first step...
+        private InvoiceRepository db;
         private DateTime? invoiceDateValue;
         private string invoiceTotalValue = string.Empty;
         private int? currentTransId;
@@ -116,6 +115,7 @@ namespace PurchaseInvoices
         }
         private void ConnectToDatabase()
         {
+            db = null;
             connectionString = AppConnection.ConnectionString;
             if (string.IsNullOrWhiteSpace(connectionString))
             {
@@ -125,8 +125,7 @@ namespace PurchaseInvoices
 
             try
             {
-                con?.Dispose();
-                con = new SqlConnection(connectionString); //-- combination of second or third step...
+                db = new InvoiceRepository(connectionString);
             }
             catch (ArgumentException ex)
             {
@@ -161,8 +160,6 @@ namespace PurchaseInvoices
                 return;
             }
 
-            con.Open();  //--fourth step...
-            con.Close();  //--fifth step...
             cboCustomer.Items.Clear();
             cboItem.Items.Clear();
             LoadCustomers(); // whene ever we have to called any method we can called it over here in from load form
@@ -290,111 +287,73 @@ namespace PurchaseInvoices
         }
         private List<string> GetTransNumbers()
         {
-            List<string> numbers = new List<string>();
             try
             {
-                con.Open();
-
-                string fetchTrnsNumQry = "SELECT TRANS_NO FROM PURCH_HEADER ORDER BY TRANS_ID";
-                using (SqlCommand cmd = new SqlCommand(fetchTrnsNumQry, con))
-                using (SqlDataReader sdr = cmd.ExecuteReader())
-                {
-                    while (sdr.Read())
-                    {
-                        numbers.Add(sdr["TRANS_NO"].ToString());
-                    }
-                }
+                return db.GetInvoiceNumbers();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return new List<string>();
             }
-            finally
-            {
-                con.Close();
-            }
-            return numbers;
         }
         private bool LoadRecord(string transNumber, bool reportMissing = true)
         {
-            bool found = false;
+            InvoiceRecord invoice;
             try
             {
-                con.Open();
-                string searchHeaderQuery = "SELECT * FROM PURCH_HEADER WHERE TRANS_NO = @invoiceNum"; ;
-                string searchDetailQuery = "SELECT * FROM PURCH_DETAIL WHERE TRANS_ID IN (SELECT h.TRANS_ID FROM PURCH_HEADER h WHERE h.TRANS_NO = @invoiceNum)";
-
-                using (SqlCommand cmdHeader = new SqlCommand(searchHeaderQuery, con))
-                using (SqlCommand cmdDetail = new SqlCommand(searchDetailQuery, con))
-                {
-                    cmdHeader.Parameters.AddWithValue("@invoiceNum", transNumber);
-                    cmdDetail.Parameters.AddWithValue("@invoiceNum", transNumber);
-
-                    using (SqlDataReader sdrHeader = cmdHeader.ExecuteReader())
-                    {
-                        if (sdrHeader.Read())
-                        {
-                            string TRANS_NO = sdrHeader["TRANS_NO"].ToString();
-                            string CUST_ID = sdrHeader["CUST_ID"].ToString();
-                            string TOTAL_AMOUNT = sdrHeader["TOTAL_AMOUNT"].ToString();
-                            InvoiceDate = sdrHeader["TRANS_DATE"] as DateTime?;
-                            currentTransId = Convert.ToInt32(sdrHeader["TRANS_ID"]);
-                            editingTransId = null;
-
-                            txtInvoiceNo.Text = TRANS_NO;
-                            cboCustomer.SelectedIndex = cboCustomer.FindStringExact(CUST_ID);
-                            InvoiceTotal = TOTAL_AMOUNT;
-
-                            dgvLines.Rows.Clear();
-                            using (SqlDataReader sdrDetail = cmdDetail.ExecuteReader())
-                            {
-                                while (sdrDetail.Read())
-                                {
-                                    string SLNO = sdrDetail["SLNO"].ToString();
-                                    string ITEM_CODE = sdrDetail["ITEM_CODE"].ToString();
-                                    string QTY = sdrDetail["QTY"].ToString();
-                                    string RATE = sdrDetail["RATE"].ToString();
-                                    string AMOUNT = sdrDetail["AMOUNT"].ToString();
-
-                                    string ITEM_DESCRIPTION = GetDescription(ITEM_CODE);
-
-                                    dgvLines.Rows.Add(SLNO, ITEM_CODE, ITEM_DESCRIPTION, QTY, RATE, AMOUNT);
-                                }
-                            }
-                            SetReadOnlyMode(true);
-                            found = true;
-                        }
-                        else if (reportMissing)
-                        {
-                            MessageBox.Show("No matching record found.", "Search Result", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                    }
-                }
+                invoice = db.FindInvoice(transNumber);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
-            finally
+            if (invoice == null)
             {
-                con.Close();
+                if (reportMissing)
+                {
+                    MessageBox.Show("No matching record found.", "Search Result", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                return false;
             }
-            return found;
+
+            InvoiceDate = invoice.Date;
+            currentTransId = invoice.TransId;
+            editingTransId = null;
+
+            txtInvoiceNo.Text = invoice.TransNo;
+            cboCustomer.SelectedIndex = cboCustomer.FindStringExact(invoice.CustomerId);
+            InvoiceTotal = AsText(invoice.Total);
+
+            dgvLines.Rows.Clear();
+            foreach (InvoiceLine line in invoice.Lines)
+            {
+                dgvLines.Rows.Add(AsText(line.Slno), line.ItemCode, line.Description, AsText(line.Quantity), AsText(line.Rate), AsText(line.Amount));
+            }
+            SetReadOnlyMode(true);
+            return true;
         }
+        private static string AsText(decimal? value) => value?.ToString() ?? string.Empty;
         private void btnNew_Click(object sender, EventArgs e)
         {
             if (!ConfirmDiscardInvoice())
             {
                 return;
             }
+            string nextTransNo;
+            try
+            {
+                nextTransNo = db.GetNextInvoiceNumber();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
             currentTransId = null;
             editingTransId = null;
-            string qry = "Select isnull(max(TRANS_NO),0) + 1 from PURCH_HEADER";
-            SqlCommand cmd = new SqlCommand(qry, con);
-            con.Open();
-            object result = cmd.ExecuteScalar();
-            txtInvoiceNo.Text = result.ToString();
-            con.Close();
+            txtInvoiceNo.Text = nextTransNo;
             InvoiceDate = null;
             cboCustomer.SelectedIndex = -1;
             txtCustomerName.Text = string.Empty;
@@ -410,7 +369,6 @@ namespace PurchaseInvoices
             editSnapshot = InvoiceSignature();
         }
 
-        private bool isDataSaved = false;
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (!dgvLines.EndEdit())
@@ -424,123 +382,51 @@ namespace PurchaseInvoices
                 return;
             }
 
-            isDataSaved = false;
             bool updating = editingTransId.HasValue;
             string shownTransNo = txtInvoiceNo.Text;
-            string savedTransNo;
-            int savedTransId;
+            SavedInvoice saved;
             try
             {
-                con.Open();
-
-                using (SqlTransaction transaction = con.BeginTransaction())
+                List<InvoiceLine> lines = new List<InvoiceLine>();
+                for (int i = 0; i < dgvLines.Rows.Count; i++)
                 {
-                    int lastTransId;
-                    if (updating)
+                    lines.Add(new InvoiceLine
                     {
-                        string headerUpdateQuery = "update PURCH_HEADER set CUST_ID = @CUST_ID, TOTAL_AMOUNT = @TOTAL_AMOUNT where TRANS_ID = @TRANS_ID; ";
-                        headerUpdateQuery += "select TRANS_ID, TRANS_NO, TRANS_DATE from PURCH_HEADER where TRANS_ID = @TRANS_ID;";
-                        using (SqlCommand headerCmd = new SqlCommand(headerUpdateQuery, con, transaction))
-                        {
-                            headerCmd.Parameters.AddWithValue("@CUST_ID", cboCustomer.Text);
-                            headerCmd.Parameters.AddWithValue("@TOTAL_AMOUNT", Convert.ToDecimal(InvoiceTotal));
-                            headerCmd.Parameters.AddWithValue("@TRANS_ID", editingTransId.Value);
-                            using (SqlDataReader sdr = headerCmd.ExecuteReader())
-                            {
-                                if (!sdr.Read())
-                                {
-                                    throw new InvalidOperationException($"Invoice {shownTransNo} no longer exists. Someone else may have deleted it.");
-                                }
-                                lastTransId = Convert.ToInt32(sdr["TRANS_ID"]);
-                                savedTransNo = sdr["TRANS_NO"].ToString();
-                                InvoiceDate = sdr["TRANS_DATE"] as DateTime?;
-                            }
-                        }
-                        using (SqlCommand clearCmd = new SqlCommand("delete from PURCH_DETAIL where TRANS_ID = @TRANS_ID", con, transaction))
-                        {
-                            clearCmd.Parameters.AddWithValue("@TRANS_ID", editingTransId.Value);
-                            clearCmd.ExecuteNonQuery();
-                        }
-                    }
-                    else
-                    {
-                        string headerInsertQuery = "insert into PURCH_HEADER (TRANS_DATE, TRANS_NO, CUST_ID, TOTAL_AMOUNT) ";
-                        headerInsertQuery += "select GETDATE(), isnull(max(TRANS_NO),0) + 1, @CUST_ID, @TOTAL_AMOUNT from PURCH_HEADER with (updlock, holdlock); ";
-                        headerInsertQuery += "select TRANS_ID, TRANS_NO, TRANS_DATE from PURCH_HEADER where TRANS_ID = SCOPE_IDENTITY();";
-
-                        using (SqlCommand headerCmd = new SqlCommand(headerInsertQuery, con, transaction))
-                        {
-                            headerCmd.Parameters.AddWithValue("@CUST_ID", cboCustomer.Text);
-                            headerCmd.Parameters.AddWithValue("@TOTAL_AMOUNT", Convert.ToDecimal(InvoiceTotal));
-                            using (SqlDataReader sdr = headerCmd.ExecuteReader())
-                            {
-                                sdr.Read();
-                                lastTransId = Convert.ToInt32(sdr["TRANS_ID"]);
-                                savedTransNo = sdr["TRANS_NO"].ToString();
-                                InvoiceDate = sdr["TRANS_DATE"] as DateTime?;
-                            }
-                        }
-                    }
-                    savedTransId = lastTransId;
-
-                    string detailInsertQuery = "insert into PURCH_DETAIL(TRANS_ID,SLNO, ITEM_CODE, QTY, RATE, AMOUNT) values";
-                    List<SqlParameter> detailParams = new List<SqlParameter>();
-                    detailParams.Add(new SqlParameter("@TRANS_ID", lastTransId));
-
-                    for (int i = 0; i < dgvLines.Rows.Count; i++)
-                    {
-                        string itemCode = dgvLines.Rows[i].Cells[1].Value.ToString();
-                        string qty = dgvLines.Rows[i].Cells[3].Value.ToString();
-                        string rate = dgvLines.Rows[i].Cells[4].Value.ToString();
-                        string amount = dgvLines.Rows[i].Cells[5].Value.ToString();
-
-                        detailInsertQuery += $"(@TRANS_ID, @SLNO{i}, @ITEM_CODE{i}, @QTY{i}, @RATE{i}, @AMOUNT{i})";
-                        detailParams.Add(new SqlParameter($"@SLNO{i}", i + 1));
-                        detailParams.Add(new SqlParameter($"@ITEM_CODE{i}", itemCode));
-                        detailParams.Add(new SqlParameter($"@QTY{i}", Convert.ToDecimal(qty)));
-                        detailParams.Add(new SqlParameter($"@RATE{i}", Convert.ToDecimal(rate)));
-                        detailParams.Add(new SqlParameter($"@AMOUNT{i}", Convert.ToDecimal(amount)));
-                        if (i < dgvLines.Rows.Count - 1)
-                        {
-                            detailInsertQuery += ", ";
-                        }
-                    }
-                    using (SqlCommand detailCmd = new SqlCommand(detailInsertQuery, con, transaction))  //.Open();
-                    {
-                        detailCmd.Parameters.AddRange(detailParams.ToArray());
-                        detailCmd.ExecuteNonQuery();
-                    }
-
-                    transaction.Commit();
+                        ItemCode = dgvLines.Rows[i].Cells[1].Value.ToString(),
+                        Quantity = Convert.ToDecimal(dgvLines.Rows[i].Cells[3].Value.ToString()),
+                        Rate = Convert.ToDecimal(dgvLines.Rows[i].Cells[4].Value.ToString()),
+                        Amount = Convert.ToDecimal(dgvLines.Rows[i].Cells[5].Value.ToString()),
+                    });
                 }
-                isDataSaved = true;
-                currentTransId = savedTransId;
-                editingTransId = null;
-                txtInvoiceNo.Text = savedTransNo;
-                SetReadOnlyMode(true);
-
-                string message = updating ? $"Invoice {savedTransNo} updated successfully." : "Data inserted successfully!";
-                if (!updating && savedTransNo != shownTransNo)
-                {
-                    message += $" Invoice number {shownTransNo} was taken by another save, so this invoice was saved as {savedTransNo}.";
-                }
-                MessageBox.Show(message, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                saved = db.SaveInvoice(editingTransId, cboCustomer.Text, Convert.ToDecimal(InvoiceTotal), lines);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            finally
+            if (saved == null)
             {
-                con.Close();
+                MessageBox.Show($"Error: Invoice {shownTransNo} no longer exists. Someone else may have deleted it.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
-            if (isDataSaved)
+            currentTransId = saved.TransId;
+            editingTransId = null;
+            InvoiceDate = saved.Date;
+            txtInvoiceNo.Text = saved.TransNo;
+            SetReadOnlyMode(true);
+
+            string message = updating ? $"Invoice {saved.TransNo} updated successfully." : "Data inserted successfully!";
+            if (!updating && saved.TransNo != shownTransNo)
             {
-                transNumbers = GetTransNumbers();
-                transNumbers.Reverse();
-                currentIndex = Math.Max(0, transNumbers.IndexOf(txtInvoiceNo.Text));
+                message += $" Invoice number {shownTransNo} was taken by another save, so this invoice was saved as {saved.TransNo}.";
             }
+            MessageBox.Show(message, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            transNumbers = GetTransNumbers();
+            transNumbers.Reverse();
+            currentIndex = Math.Max(0, transNumbers.IndexOf(txtInvoiceNo.Text));
         }
         private void SetReadOnlyMode(bool readOnly)
         {
@@ -615,33 +501,15 @@ namespace PurchaseInvoices
                 return;
             }
 
-            bool deleted = false;
+            bool deleted;
             try
             {
-                con.Open();
-                using (SqlTransaction transaction = con.BeginTransaction())
-                {
-                    using (SqlCommand detailCmd = new SqlCommand("delete from PURCH_DETAIL where TRANS_ID = @TRANS_ID", con, transaction))
-                    {
-                        detailCmd.Parameters.AddWithValue("@TRANS_ID", currentTransId.Value);
-                        detailCmd.ExecuteNonQuery();
-                    }
-                    using (SqlCommand headerCmd = new SqlCommand("delete from PURCH_HEADER where TRANS_ID = @TRANS_ID", con, transaction))
-                    {
-                        headerCmd.Parameters.AddWithValue("@TRANS_ID", currentTransId.Value);
-                        deleted = headerCmd.ExecuteNonQuery() > 0;
-                    }
-                    transaction.Commit();
-                }
+                deleted = db.DeleteInvoice(currentTransId.Value);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Could not delete invoice {transNo}.\n\n{ex.Message}", "Delete invoice", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
-            }
-            finally
-            {
-                con.Close();
             }
             if (!deleted)
             {
@@ -707,18 +575,12 @@ namespace PurchaseInvoices
         }
         private void LoadCustomers()
         {
-            String qry = "select * from CUSTOMER_MASTER order by CUSTID";
-            SqlCommand cmd = new SqlCommand(qry, con);
-            con.Open();
-            SqlDataReader dr = cmd.ExecuteReader();
             Dictionary<string, string> names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            while (dr.Read())
+            foreach (CustomerRecord customer in db.GetCustomers())
             {
-                string CUSTID = dr.GetString(0);
-                cboCustomer.Items.Add(CUSTID);
-                names[CUSTID] = dr["CUST_NAME"].ToString();
+                cboCustomer.Items.Add(customer.Id);
+                names[customer.Id] = customer.Name;
             }
-            con.Close();
             cboCustomer.Descriptions = names;
         }
         private void cboCustomer_SelectedIndexChanged(object sender, EventArgs e)
@@ -727,34 +589,32 @@ namespace PurchaseInvoices
             txtCustomerAddress.Text = string.Empty;
             if (cboCustomer.SelectedItem != null)
             {
-                string CUSTID = Convert.ToString(cboCustomer.SelectedItem.ToString());
-                String qry = "select * from CUSTOMER_MASTER where CUSTID = @CUSTID";
-                SqlDataAdapter sda = new SqlDataAdapter(qry, con);
-                sda.SelectCommand.Parameters.AddWithValue("@CUSTID", CUSTID);
-                DataTable data = new DataTable();
-                sda.Fill(data);
-                if (data.Rows.Count > 0)
+                CustomerRecord customer;
+                try
                 {
-                    txtCustomerName.Text = data.Rows[0]["CUST_NAME"].ToString();
-                    txtCustomerAddress.Text = data.Rows[0]["CUST_ADDRESS"].ToString();
+                    customer = db.FindCustomer(cboCustomer.SelectedItem.ToString());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                if (customer != null)
+                {
+                    txtCustomerName.Text = customer.Name;
+                    txtCustomerAddress.Text = customer.Address;
                 }
             }
         }
         private void LoadItems()
         {
-            string qry = "select * from ITEM_MASTER order by ITEM_CODE";
-            SqlCommand cmd = new SqlCommand(qry, con);
-            con.Open();
-            SqlDataReader sdr = cmd.ExecuteReader();
             Dictionary<string, string> descriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             cboItem.Descriptions = descriptions;
-            while (sdr.Read())
+            foreach (ItemRecord item in db.GetItems())
             {
-                string itmcode = sdr.GetString(0);
-                descriptions[itmcode] = sdr["ITEM_DESCRIPTION"].ToString();
-                cboItem.Items.Add(itmcode);
+                descriptions[item.Code] = item.Description;
+                cboItem.Items.Add(item.Code);
             }
-            con.Close();
         }
 
         private void cboItem_SelectedIndexChanged(object sender, EventArgs e)
@@ -773,18 +633,20 @@ namespace PurchaseInvoices
                 return;
             }
 
-            string itmcode = Convert.ToString(cboItem.SelectedItem.ToString());
-            string qury = "select * from ITEM_MASTER where ITEM_CODE = @ITEM_CODE";
-            SqlDataAdapter sda = new SqlDataAdapter(qury, con);
-            sda.SelectCommand.Parameters.AddWithValue("@ITEM_CODE", itmcode);
-            DataTable data = new DataTable();
-            sda.Fill(data);
-            if (data.Rows.Count > 0)
+            ItemRecord item;
+            try
             {
-                object cost = data.Rows[0]["ITEM_COST"];
-                txtItemRate.Text = cost == DBNull.Value ? string.Empty : Convert.ToDecimal(cost).ToString("N2", CultureInfo.CurrentCulture);
+                item = db.FindItem(cboItem.SelectedItem.ToString());
             }
-            con.Close();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            if (item != null)
+            {
+                txtItemRate.Text = item.Cost?.ToString("N2", CultureInfo.CurrentCulture) ?? string.Empty;
+            }
             txtItemQty.Text = string.Empty;
             txtAmount.Text = string.Empty;
         }
@@ -855,36 +717,7 @@ namespace PurchaseInvoices
 
         private string GetDescription(string itemcode)
         {
-            string description = string.Empty;
-            bool openedHere = con.State == ConnectionState.Closed;
-
-            string qry = "SELECT ITEM_DESCRIPTION FROM ITEM_MASTER WHERE ITEM_CODE = @ITEM_CODE";
-            using (SqlCommand cmd = new SqlCommand(qry, con))
-            {
-                cmd.Parameters.AddWithValue("@ITEM_CODE", itemcode);
-                try
-                {
-                    if (openedHere)
-                    {
-                        con.Open();
-                    }
-                    object result = cmd.ExecuteScalar();
-
-                    if (result != null)
-                    {
-                        description = result.ToString();
-                    }
-                }
-                finally
-                {
-                    if (openedHere)
-                    {
-                        con.Close();
-                    }
-                }
-            }
-
-            return description;
+            return db.FindItem(itemcode)?.Description ?? string.Empty;
         }
         private void UpdateSlno()
         {

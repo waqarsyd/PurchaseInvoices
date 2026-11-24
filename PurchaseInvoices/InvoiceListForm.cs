@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.Windows.Forms;
 
@@ -67,32 +66,16 @@ namespace PurchaseInvoices
         {
             try
             {
-                using (SqlConnection con = new SqlConnection(connectionString))
+                InvoiceRepository db = new InvoiceRepository(connectionString);
+                DataTable data = db.GetInvoiceList();
+                Dictionary<string, string> customers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (CustomerRecord customer in db.GetCustomers())
                 {
-                    con.Open();
-                    DataTable data = new DataTable();
-                    string sql = "SELECT h.TRANS_ID, h.TRANS_NO, h.TRANS_DATE, h.CUST_ID, c.CUST_NAME, h.TOTAL_AMOUNT, " +
-                                 "(SELECT COUNT(*) FROM PURCH_DETAIL d WHERE d.TRANS_ID = h.TRANS_ID) AS LINES " +
-                                 "FROM PURCH_HEADER h LEFT JOIN CUSTOMER_MASTER c ON c.CUSTID = h.CUST_ID " +
-                                 "ORDER BY h.TRANS_ID DESC";
-                    using (SqlDataAdapter adapter = new SqlDataAdapter(sql, con))
-                    {
-                        adapter.Fill(data);
-                    }
-                    Dictionary<string, string> customers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    using (SqlCommand cmd = new SqlCommand("SELECT CUSTID, CUST_NAME FROM CUSTOMER_MASTER ORDER BY CUSTID", con))
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string id = reader.GetString(0);
-                            customers[id] = reader["CUST_NAME"].ToString();
-                            comboCustomer.Items.Add(id);
-                        }
-                    }
-                    comboCustomer.Descriptions = customers;
-                    table = data;
+                    customers[customer.Id] = customer.Name;
+                    comboCustomer.Items.Add(customer.Id);
                 }
+                comboCustomer.Descriptions = customers;
+                table = data;
             }
             catch (Exception ex)
             {
