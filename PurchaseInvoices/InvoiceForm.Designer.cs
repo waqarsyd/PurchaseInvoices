@@ -45,7 +45,7 @@ namespace PurchaseInvoices
             this.btnCancelEdit = new PurchaseInvoices.ModernButton();
             this.btnPrevious = new PurchaseInvoices.ModernButton();
             this.btnNext = new PurchaseInvoices.ModernButton();
-            this.button1 = new PurchaseInvoices.ModernButton();
+            this.btnSearch = new PurchaseInvoices.ModernButton();
             this.btnAllInvoices = new PurchaseInvoices.ModernButton();
             this.btnAdd = new PurchaseInvoices.ModernButton();
             this.btnCustomers = new PurchaseInvoices.ModernButton();
@@ -57,7 +57,7 @@ namespace PurchaseInvoices
             this.footerPanel = new PurchaseInvoices.FooterPanel();
             this.contentPanel = new System.Windows.Forms.Panel();
             this.gridCard = new PurchaseInvoices.CardPanel();
-            this.dgv_sales = new PurchaseInvoices.ModernGrid();
+            this.dgvLines = new PurchaseInvoices.ModernGrid();
             this.Slno = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ItemCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -65,46 +65,46 @@ namespace PurchaseInvoices
             this.Rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Amount = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.addCard = new PurchaseInvoices.CardPanel();
-            this.label4 = new System.Windows.Forms.Label();
-            this.combo_Itemcode = new PurchaseInvoices.ModernComboBox();
-            this.label5 = new System.Windows.Forms.Label();
+            this.lblItem = new System.Windows.Forms.Label();
+            this.cboItem = new PurchaseInvoices.ModernComboBox();
+            this.lblRate = new System.Windows.Forms.Label();
             this.hostRate = new PurchaseInvoices.FieldHost();
             this.txtItemRate = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
+            this.lblQuantity = new System.Windows.Forms.Label();
             this.hostQty = new PurchaseInvoices.FieldHost();
             this.txtItemQty = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
+            this.lblAmount = new System.Windows.Forms.Label();
             this.hostAmount = new PurchaseInvoices.FieldHost();
             this.txtAmount = new System.Windows.Forms.TextBox();
             this.topRow = new System.Windows.Forms.Panel();
             this.detailsCard = new PurchaseInvoices.CardPanel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.hostTransNo = new PurchaseInvoices.FieldHost();
-            this.txtTransNo = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.comboCustId = new PurchaseInvoices.ModernComboBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.hostCustName = new PurchaseInvoices.FieldHost();
-            this.txtcustname = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.hostCustAddress = new PurchaseInvoices.FieldHost();
-            this.txtcustaddresss = new System.Windows.Forms.TextBox();
+            this.lblInvoiceNo = new System.Windows.Forms.Label();
+            this.hostInvoiceNo = new PurchaseInvoices.FieldHost();
+            this.txtInvoiceNo = new System.Windows.Forms.TextBox();
+            this.lblCustomerId = new System.Windows.Forms.Label();
+            this.cboCustomer = new PurchaseInvoices.ModernComboBox();
+            this.lblCustomerName = new System.Windows.Forms.Label();
+            this.hostCustomerName = new PurchaseInvoices.FieldHost();
+            this.txtCustomerName = new System.Windows.Forms.TextBox();
+            this.lblAddress = new System.Windows.Forms.Label();
+            this.hostCustomerAddress = new PurchaseInvoices.FieldHost();
+            this.txtCustomerAddress = new System.Windows.Forms.TextBox();
             this.summaryCard = new PurchaseInvoices.SummaryCard();
             this.headerPanel.SuspendLayout();
             this.hostSearch.SuspendLayout();
             this.footerPanel.SuspendLayout();
             this.contentPanel.SuspendLayout();
             this.gridCard.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_sales)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvLines)).BeginInit();
             this.addCard.SuspendLayout();
             this.hostRate.SuspendLayout();
             this.hostQty.SuspendLayout();
             this.hostAmount.SuspendLayout();
             this.topRow.SuspendLayout();
             this.detailsCard.SuspendLayout();
-            this.hostTransNo.SuspendLayout();
-            this.hostCustName.SuspendLayout();
-            this.hostCustAddress.SuspendLayout();
+            this.hostInvoiceNo.SuspendLayout();
+            this.hostCustomerName.SuspendLayout();
+            this.hostCustomerAddress.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnSave
@@ -250,22 +250,22 @@ namespace PurchaseInvoices
             this.btnNext.UseVisualStyleBackColor = false;
             this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
             // 
-            // button1
+            // btnSearch
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.BackColor = System.Drawing.Color.Transparent;
-            this.button1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
-            this.button1.Kind = PurchaseInvoices.ButtonKind.Ghost;
-            this.button1.Location = new System.Drawing.Point(738, 14);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(100, 36);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Search";
-            this.toolTip.SetToolTip(this.button1, "Find an invoice by number (Enter in the search box, Ctrl+F to jump there)");
-            this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSearch.BackColor = System.Drawing.Color.Transparent;
+            this.btnSearch.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSearch.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSearch.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnSearch.Kind = PurchaseInvoices.ButtonKind.Ghost;
+            this.btnSearch.Location = new System.Drawing.Point(738, 14);
+            this.btnSearch.Name = "btnSearch";
+            this.btnSearch.Size = new System.Drawing.Size(100, 36);
+            this.btnSearch.TabIndex = 1;
+            this.btnSearch.Text = "Search";
+            this.toolTip.SetToolTip(this.btnSearch, "Find an invoice by number (Enter in the search box, Ctrl+F to jump there)");
+            this.btnSearch.UseVisualStyleBackColor = false;
+            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
             //
             // btnAllInvoices
             //
@@ -355,7 +355,7 @@ namespace PurchaseInvoices
             // 
             this.headerPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             this.headerPanel.Controls.Add(this.hostSearch);
-            this.headerPanel.Controls.Add(this.button1);
+            this.headerPanel.Controls.Add(this.btnSearch);
             this.headerPanel.Controls.Add(this.btnAllInvoices);
             this.headerPanel.Controls.Add(this.btnPrevious);
             this.headerPanel.Controls.Add(this.btnNext);
@@ -424,7 +424,7 @@ namespace PurchaseInvoices
             // gridCard
             // 
             this.gridCard.BackColor = System.Drawing.Color.White;
-            this.gridCard.Controls.Add(this.dgv_sales);
+            this.gridCard.Controls.Add(this.dgvLines);
             this.gridCard.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gridCard.Glyph = "";
             this.gridCard.Location = new System.Drawing.Point(14, 294);
@@ -433,22 +433,22 @@ namespace PurchaseInvoices
             this.gridCard.TabIndex = 2;
             this.gridCard.Title = "Line items";
             // 
-            // dgv_sales
+            // dgvLines
             // 
-            this.dgv_sales.AllowUserToAddRows = false;
-            this.dgv_sales.AllowUserToResizeRows = false;
+            this.dgvLines.AllowUserToAddRows = false;
+            this.dgvLines.AllowUserToResizeRows = false;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(251)))), ((int)(((byte)(254)))));
             dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(251)))), ((int)(((byte)(254)))));
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
-            this.dgv_sales.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgv_sales.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.dgvLines.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.dgvLines.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgv_sales.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgv_sales.BackgroundColor = System.Drawing.Color.White;
-            this.dgv_sales.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.dgv_sales.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
-            this.dgv_sales.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.dgvLines.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvLines.BackgroundColor = System.Drawing.Color.White;
+            this.dgvLines.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dgvLines.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
+            this.dgvLines.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
@@ -457,9 +457,9 @@ namespace PurchaseInvoices
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(116)))), ((int)(((byte)(139)))));
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_sales.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            this.dgv_sales.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            this.dgv_sales.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dgvLines.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvLines.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            this.dgvLines.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Slno,
             this.ItemCode,
             this.Description,
@@ -474,19 +474,19 @@ namespace PurchaseInvoices
             dataGridViewCellStyle7.SelectionBackColor = System.Drawing.Color.White;
             dataGridViewCellStyle7.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgv_sales.DefaultCellStyle = dataGridViewCellStyle7;
-            this.dgv_sales.EnableHeadersVisualStyles = false;
-            this.dgv_sales.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(246)))));
-            this.dgv_sales.Location = new System.Drawing.Point(20, 46);
-            this.dgv_sales.MultiSelect = false;
-            this.dgv_sales.Name = "dgv_sales";
-            this.dgv_sales.RowHeadersVisible = false;
-            this.dgv_sales.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgv_sales.Size = new System.Drawing.Size(1052, 210);
-            this.dgv_sales.TabIndex = 0;
-            this.dgv_sales.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_sales_CellEndEdit);
-            this.dgv_sales.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.dgv_sales_CellValidating);
-            this.dgv_sales.UserDeletedRow += new System.Windows.Forms.DataGridViewRowEventHandler(this.dgv_sales_UserDeletedRow);
+            this.dgvLines.DefaultCellStyle = dataGridViewCellStyle7;
+            this.dgvLines.EnableHeadersVisualStyles = false;
+            this.dgvLines.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(246)))));
+            this.dgvLines.Location = new System.Drawing.Point(20, 46);
+            this.dgvLines.MultiSelect = false;
+            this.dgvLines.Name = "dgvLines";
+            this.dgvLines.RowHeadersVisible = false;
+            this.dgvLines.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvLines.Size = new System.Drawing.Size(1052, 210);
+            this.dgvLines.TabIndex = 0;
+            this.dgvLines.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvLines_CellEndEdit);
+            this.dgvLines.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.dgvLines_CellValidating);
+            this.dgvLines.UserDeletedRow += new System.Windows.Forms.DataGridViewRowEventHandler(this.dgvLines_UserDeletedRow);
             // 
             // Slno
             // 
@@ -544,13 +544,13 @@ namespace PurchaseInvoices
             // addCard
             // 
             this.addCard.BackColor = System.Drawing.Color.White;
-            this.addCard.Controls.Add(this.label4);
-            this.addCard.Controls.Add(this.combo_Itemcode);
-            this.addCard.Controls.Add(this.label5);
+            this.addCard.Controls.Add(this.lblItem);
+            this.addCard.Controls.Add(this.cboItem);
+            this.addCard.Controls.Add(this.lblRate);
             this.addCard.Controls.Add(this.hostRate);
-            this.addCard.Controls.Add(this.label6);
+            this.addCard.Controls.Add(this.lblQuantity);
             this.addCard.Controls.Add(this.hostQty);
-            this.addCard.Controls.Add(this.label7);
+            this.addCard.Controls.Add(this.lblAmount);
             this.addCard.Controls.Add(this.hostAmount);
             this.addCard.Controls.Add(this.btnAdd);
             this.addCard.Dock = System.Windows.Forms.DockStyle.Top;
@@ -559,48 +559,48 @@ namespace PurchaseInvoices
             this.addCard.Size = new System.Drawing.Size(1092, 98);
             this.addCard.TabIndex = 1;
             // 
-            // label4
+            // lblItem
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
-            this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
-            this.label4.Location = new System.Drawing.Point(24, 17);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(32, 15);
-            this.label4.TabIndex = 10;
-            this.label4.Text = "Item";
+            this.lblItem.AutoSize = true;
+            this.lblItem.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.lblItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblItem.Location = new System.Drawing.Point(24, 17);
+            this.lblItem.Name = "lblItem";
+            this.lblItem.Size = new System.Drawing.Size(32, 15);
+            this.lblItem.TabIndex = 10;
+            this.lblItem.Text = "Item";
             // 
-            // combo_Itemcode
+            // cboItem
             // 
-            this.combo_Itemcode.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.cboItem.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.combo_Itemcode.BackColor = System.Drawing.Color.White;
-            this.combo_Itemcode.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.combo_Itemcode.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.combo_Itemcode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.combo_Itemcode.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.combo_Itemcode.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.combo_Itemcode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
-            this.combo_Itemcode.IntegralHeight = false;
-            this.combo_Itemcode.Location = new System.Drawing.Point(24, 37);
-            this.combo_Itemcode.MaxDropDownItems = 10;
-            this.combo_Itemcode.Name = "combo_Itemcode";
-            this.combo_Itemcode.Placeholder = "Select an item";
-            this.combo_Itemcode.Size = new System.Drawing.Size(430, 36);
-            this.combo_Itemcode.TabIndex = 0;
-            this.combo_Itemcode.SelectedIndexChanged += new System.EventHandler(this.combo_Itemcode_SelectedIndexChanged);
+            this.cboItem.BackColor = System.Drawing.Color.White;
+            this.cboItem.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.cboItem.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.cboItem.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboItem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cboItem.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.cboItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            this.cboItem.IntegralHeight = false;
+            this.cboItem.Location = new System.Drawing.Point(24, 37);
+            this.cboItem.MaxDropDownItems = 10;
+            this.cboItem.Name = "cboItem";
+            this.cboItem.Placeholder = "Select an item";
+            this.cboItem.Size = new System.Drawing.Size(430, 36);
+            this.cboItem.TabIndex = 0;
+            this.cboItem.SelectedIndexChanged += new System.EventHandler(this.cboItem_SelectedIndexChanged);
             // 
-            // label5
+            // lblRate
             // 
-            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
-            this.label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
-            this.label5.Location = new System.Drawing.Point(470, 17);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(30, 15);
-            this.label5.TabIndex = 11;
-            this.label5.Text = "Rate";
+            this.lblRate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblRate.AutoSize = true;
+            this.lblRate.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.lblRate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblRate.Location = new System.Drawing.Point(470, 17);
+            this.lblRate.Name = "lblRate";
+            this.lblRate.Size = new System.Drawing.Size(30, 15);
+            this.lblRate.TabIndex = 11;
+            this.lblRate.Text = "Rate";
             // 
             // hostRate
             // 
@@ -627,17 +627,17 @@ namespace PurchaseInvoices
             this.txtItemRate.TabStop = false;
             this.txtItemRate.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
-            // label6
+            // lblQuantity
             // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
-            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
-            this.label6.Location = new System.Drawing.Point(616, 17);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(53, 15);
-            this.label6.TabIndex = 12;
-            this.label6.Text = "Quantity";
+            this.lblQuantity.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblQuantity.AutoSize = true;
+            this.lblQuantity.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.lblQuantity.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblQuantity.Location = new System.Drawing.Point(616, 17);
+            this.lblQuantity.Name = "lblQuantity";
+            this.lblQuantity.Size = new System.Drawing.Size(53, 15);
+            this.lblQuantity.TabIndex = 12;
+            this.lblQuantity.Text = "Quantity";
             // 
             // hostQty
             // 
@@ -663,19 +663,19 @@ namespace PurchaseInvoices
             this.txtItemQty.TabIndex = 0;
             this.txtItemQty.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtItemQty.TextChanged += new System.EventHandler(this.txtItemQty_TextChanged);
-            this.txtItemQty.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtItemOrderQty);
+            this.txtItemQty.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtItemQty_KeyPress);
             // 
-            // label7
+            // lblAmount
             // 
-            this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
-            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
-            this.label7.Location = new System.Drawing.Point(752, 17);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(51, 15);
-            this.label7.TabIndex = 13;
-            this.label7.Text = "Amount";
+            this.lblAmount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblAmount.AutoSize = true;
+            this.lblAmount.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.lblAmount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblAmount.Location = new System.Drawing.Point(752, 17);
+            this.lblAmount.Name = "lblAmount";
+            this.lblAmount.Size = new System.Drawing.Size(51, 15);
+            this.lblAmount.TabIndex = 13;
+            this.lblAmount.Text = "Amount";
             // 
             // hostAmount
             // 
@@ -716,14 +716,14 @@ namespace PurchaseInvoices
             // detailsCard
             // 
             this.detailsCard.BackColor = System.Drawing.Color.White;
-            this.detailsCard.Controls.Add(this.label1);
-            this.detailsCard.Controls.Add(this.hostTransNo);
-            this.detailsCard.Controls.Add(this.label9);
-            this.detailsCard.Controls.Add(this.comboCustId);
-            this.detailsCard.Controls.Add(this.label2);
-            this.detailsCard.Controls.Add(this.hostCustName);
-            this.detailsCard.Controls.Add(this.label3);
-            this.detailsCard.Controls.Add(this.hostCustAddress);
+            this.detailsCard.Controls.Add(this.lblInvoiceNo);
+            this.detailsCard.Controls.Add(this.hostInvoiceNo);
+            this.detailsCard.Controls.Add(this.lblCustomerId);
+            this.detailsCard.Controls.Add(this.cboCustomer);
+            this.detailsCard.Controls.Add(this.lblCustomerName);
+            this.detailsCard.Controls.Add(this.hostCustomerName);
+            this.detailsCard.Controls.Add(this.lblAddress);
+            this.detailsCard.Controls.Add(this.hostCustomerAddress);
             this.detailsCard.Controls.Add(this.btnEditInvoice);
             this.detailsCard.Controls.Add(this.btnDeleteInvoice);
             this.detailsCard.Controls.Add(this.btnCancelEdit);
@@ -735,149 +735,149 @@ namespace PurchaseInvoices
             this.detailsCard.TabIndex = 0;
             this.detailsCard.Title = "Invoice details";
             // 
-            // label1
+            // lblInvoiceNo
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
-            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
-            this.label1.Location = new System.Drawing.Point(24, 48);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(66, 15);
-            this.label1.TabIndex = 10;
-            this.label1.Text = "Invoice no.";
+            this.lblInvoiceNo.AutoSize = true;
+            this.lblInvoiceNo.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.lblInvoiceNo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblInvoiceNo.Location = new System.Drawing.Point(24, 48);
+            this.lblInvoiceNo.Name = "lblInvoiceNo";
+            this.lblInvoiceNo.Size = new System.Drawing.Size(66, 15);
+            this.lblInvoiceNo.TabIndex = 10;
+            this.lblInvoiceNo.Text = "Invoice no.";
             // 
-            // hostTransNo
+            // hostInvoiceNo
             // 
-            this.hostTransNo.BackColor = System.Drawing.Color.Transparent;
-            this.hostTransNo.Controls.Add(this.txtTransNo);
-            this.hostTransNo.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.hostTransNo.Location = new System.Drawing.Point(24, 68);
-            this.hostTransNo.Name = "hostTransNo";
-            this.hostTransNo.Size = new System.Drawing.Size(144, 36);
-            this.hostTransNo.TabIndex = 0;
+            this.hostInvoiceNo.BackColor = System.Drawing.Color.Transparent;
+            this.hostInvoiceNo.Controls.Add(this.txtInvoiceNo);
+            this.hostInvoiceNo.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.hostInvoiceNo.Location = new System.Drawing.Point(24, 68);
+            this.hostInvoiceNo.Name = "hostInvoiceNo";
+            this.hostInvoiceNo.Size = new System.Drawing.Size(144, 36);
+            this.hostInvoiceNo.TabIndex = 0;
             // 
-            // txtTransNo
+            // txtInvoiceNo
             // 
-            this.txtTransNo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(246)))), ((int)(((byte)(248)))), ((int)(((byte)(251)))));
-            this.txtTransNo.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtTransNo.Font = new System.Drawing.Font("Segoe UI Semibold", 10F);
-            this.txtTransNo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
-            this.txtTransNo.Location = new System.Drawing.Point(12, 9);
-            this.txtTransNo.Name = "txtTransNo";
-            this.txtTransNo.ReadOnly = true;
-            this.txtTransNo.Size = new System.Drawing.Size(120, 18);
-            this.txtTransNo.TabIndex = 0;
-            this.txtTransNo.TabStop = false;
+            this.txtInvoiceNo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(246)))), ((int)(((byte)(248)))), ((int)(((byte)(251)))));
+            this.txtInvoiceNo.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtInvoiceNo.Font = new System.Drawing.Font("Segoe UI Semibold", 10F);
+            this.txtInvoiceNo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            this.txtInvoiceNo.Location = new System.Drawing.Point(12, 9);
+            this.txtInvoiceNo.Name = "txtInvoiceNo";
+            this.txtInvoiceNo.ReadOnly = true;
+            this.txtInvoiceNo.Size = new System.Drawing.Size(120, 18);
+            this.txtInvoiceNo.TabIndex = 0;
+            this.txtInvoiceNo.TabStop = false;
             // 
-            // label9
+            // lblCustomerId
             // 
-            this.label9.AutoSize = true;
-            this.label9.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
-            this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
-            this.label9.Location = new System.Drawing.Point(184, 48);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(74, 15);
-            this.label9.TabIndex = 11;
-            this.label9.Text = "Customer ID";
+            this.lblCustomerId.AutoSize = true;
+            this.lblCustomerId.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.lblCustomerId.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblCustomerId.Location = new System.Drawing.Point(184, 48);
+            this.lblCustomerId.Name = "lblCustomerId";
+            this.lblCustomerId.Size = new System.Drawing.Size(74, 15);
+            this.lblCustomerId.TabIndex = 11;
+            this.lblCustomerId.Text = "Customer ID";
             // 
-            // comboCustId
+            // cboCustomer
             // 
-            this.comboCustId.BackColor = System.Drawing.Color.White;
-            this.comboCustId.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.comboCustId.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.comboCustId.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboCustId.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.comboCustId.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.comboCustId.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
-            this.comboCustId.IntegralHeight = false;
-            this.comboCustId.Location = new System.Drawing.Point(184, 68);
-            this.comboCustId.MaxDropDownItems = 10;
-            this.comboCustId.Name = "comboCustId";
-            this.comboCustId.Placeholder = "Select customer";
-            this.comboCustId.ShowDescriptionInFace = false;
-            this.comboCustId.Size = new System.Drawing.Size(204, 36);
-            this.comboCustId.TabIndex = 1;
-            this.comboCustId.SelectedIndexChanged += new System.EventHandler(this.comboCustId_SelectedIndexChanged);
+            this.cboCustomer.BackColor = System.Drawing.Color.White;
+            this.cboCustomer.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.cboCustomer.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.cboCustomer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboCustomer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cboCustomer.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.cboCustomer.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            this.cboCustomer.IntegralHeight = false;
+            this.cboCustomer.Location = new System.Drawing.Point(184, 68);
+            this.cboCustomer.MaxDropDownItems = 10;
+            this.cboCustomer.Name = "cboCustomer";
+            this.cboCustomer.Placeholder = "Select customer";
+            this.cboCustomer.ShowDescriptionInFace = false;
+            this.cboCustomer.Size = new System.Drawing.Size(204, 36);
+            this.cboCustomer.TabIndex = 1;
+            this.cboCustomer.SelectedIndexChanged += new System.EventHandler(this.cboCustomer_SelectedIndexChanged);
             // 
-            // label2
+            // lblCustomerName
             // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
-            this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
-            this.label2.Location = new System.Drawing.Point(404, 48);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(91, 15);
-            this.label2.TabIndex = 12;
-            this.label2.Text = "Customer name";
+            this.lblCustomerName.AutoSize = true;
+            this.lblCustomerName.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.lblCustomerName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblCustomerName.Location = new System.Drawing.Point(404, 48);
+            this.lblCustomerName.Name = "lblCustomerName";
+            this.lblCustomerName.Size = new System.Drawing.Size(91, 15);
+            this.lblCustomerName.TabIndex = 12;
+            this.lblCustomerName.Text = "Customer name";
             // 
-            // hostCustName
+            // hostCustomerName
             // 
-            this.hostCustName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.hostCustomerName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.hostCustName.BackColor = System.Drawing.Color.Transparent;
-            this.hostCustName.Controls.Add(this.txtcustname);
-            this.hostCustName.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.hostCustName.Location = new System.Drawing.Point(404, 68);
-            this.hostCustName.Name = "hostCustName";
-            this.hostCustName.Size = new System.Drawing.Size(344, 36);
-            this.hostCustName.TabIndex = 2;
+            this.hostCustomerName.BackColor = System.Drawing.Color.Transparent;
+            this.hostCustomerName.Controls.Add(this.txtCustomerName);
+            this.hostCustomerName.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.hostCustomerName.Location = new System.Drawing.Point(404, 68);
+            this.hostCustomerName.Name = "hostCustomerName";
+            this.hostCustomerName.Size = new System.Drawing.Size(344, 36);
+            this.hostCustomerName.TabIndex = 2;
             // 
-            // txtcustname
+            // txtCustomerName
             // 
-            this.txtcustname.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(246)))), ((int)(((byte)(248)))), ((int)(((byte)(251)))));
-            this.txtcustname.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtcustname.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtcustname.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
-            this.txtcustname.Location = new System.Drawing.Point(12, 9);
-            this.txtcustname.Name = "txtcustname";
-            this.txtcustname.ReadOnly = true;
-            this.txtcustname.Size = new System.Drawing.Size(320, 18);
-            this.txtcustname.TabIndex = 0;
-            this.txtcustname.TabStop = false;
+            this.txtCustomerName.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(246)))), ((int)(((byte)(248)))), ((int)(((byte)(251)))));
+            this.txtCustomerName.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtCustomerName.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.txtCustomerName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            this.txtCustomerName.Location = new System.Drawing.Point(12, 9);
+            this.txtCustomerName.Name = "txtCustomerName";
+            this.txtCustomerName.ReadOnly = true;
+            this.txtCustomerName.Size = new System.Drawing.Size(320, 18);
+            this.txtCustomerName.TabIndex = 0;
+            this.txtCustomerName.TabStop = false;
             // 
-            // label3
+            // lblAddress
             // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
-            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
-            this.label3.Location = new System.Drawing.Point(24, 112);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(49, 15);
-            this.label3.TabIndex = 13;
-            this.label3.Text = "Address";
+            this.lblAddress.AutoSize = true;
+            this.lblAddress.Font = new System.Drawing.Font("Segoe UI Semibold", 9F);
+            this.lblAddress.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(71)))), ((int)(((byte)(85)))), ((int)(((byte)(105)))));
+            this.lblAddress.Location = new System.Drawing.Point(24, 112);
+            this.lblAddress.Name = "lblAddress";
+            this.lblAddress.Size = new System.Drawing.Size(49, 15);
+            this.lblAddress.TabIndex = 13;
+            this.lblAddress.Text = "Address";
             // 
-            // hostCustAddress
+            // hostCustomerAddress
             // 
-            this.hostCustAddress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.hostCustomerAddress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.hostCustAddress.BackColor = System.Drawing.Color.Transparent;
-            this.hostCustAddress.Controls.Add(this.txtcustaddresss);
-            this.hostCustAddress.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.hostCustAddress.Location = new System.Drawing.Point(24, 132);
-            this.hostCustAddress.Name = "hostCustAddress";
-            this.hostCustAddress.Size = new System.Drawing.Size(724, 38);
-            this.hostCustAddress.TabIndex = 3;
+            this.hostCustomerAddress.BackColor = System.Drawing.Color.Transparent;
+            this.hostCustomerAddress.Controls.Add(this.txtCustomerAddress);
+            this.hostCustomerAddress.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.hostCustomerAddress.Location = new System.Drawing.Point(24, 132);
+            this.hostCustomerAddress.Name = "hostCustomerAddress";
+            this.hostCustomerAddress.Size = new System.Drawing.Size(724, 38);
+            this.hostCustomerAddress.TabIndex = 3;
             // 
-            // txtcustaddresss
+            // txtCustomerAddress
             // 
-            this.txtcustaddresss.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(246)))), ((int)(((byte)(248)))), ((int)(((byte)(251)))));
-            this.txtcustaddresss.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtcustaddresss.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.txtcustaddresss.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
-            this.txtcustaddresss.Location = new System.Drawing.Point(12, 8);
-            this.txtcustaddresss.Multiline = true;
-            this.txtcustaddresss.Name = "txtcustaddresss";
-            this.txtcustaddresss.ReadOnly = true;
-            this.txtcustaddresss.Size = new System.Drawing.Size(700, 24);
-            this.txtcustaddresss.TabIndex = 0;
-            this.txtcustaddresss.TabStop = false;
+            this.txtCustomerAddress.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(246)))), ((int)(((byte)(248)))), ((int)(((byte)(251)))));
+            this.txtCustomerAddress.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.txtCustomerAddress.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.txtCustomerAddress.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            this.txtCustomerAddress.Location = new System.Drawing.Point(12, 8);
+            this.txtCustomerAddress.Multiline = true;
+            this.txtCustomerAddress.Name = "txtCustomerAddress";
+            this.txtCustomerAddress.ReadOnly = true;
+            this.txtCustomerAddress.Size = new System.Drawing.Size(700, 24);
+            this.txtCustomerAddress.TabIndex = 0;
+            this.txtCustomerAddress.TabStop = false;
             // 
             // summaryCard
             // 
-            this.summaryCard.CustomerSource = this.txtcustname;
+            this.summaryCard.CustomerSource = this.txtCustomerName;
             this.summaryCard.Dock = System.Windows.Forms.DockStyle.Right;
-            this.summaryCard.InvoiceSource = this.txtTransNo;
-            this.summaryCard.ItemsSource = this.dgv_sales;
+            this.summaryCard.InvoiceSource = this.txtInvoiceNo;
+            this.summaryCard.ItemsSource = this.dgvLines;
             this.summaryCard.Location = new System.Drawing.Point(772, 0);
             this.summaryCard.ModeSource = this.btnSave;
             this.summaryCard.Name = "summaryCard";
@@ -907,7 +907,7 @@ namespace PurchaseInvoices
             this.footerPanel.ResumeLayout(false);
             this.contentPanel.ResumeLayout(false);
             this.gridCard.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgv_sales)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvLines)).EndInit();
             this.addCard.ResumeLayout(false);
             this.addCard.PerformLayout();
             this.hostRate.ResumeLayout(false);
@@ -919,12 +919,12 @@ namespace PurchaseInvoices
             this.topRow.ResumeLayout(false);
             this.detailsCard.ResumeLayout(false);
             this.detailsCard.PerformLayout();
-            this.hostTransNo.ResumeLayout(false);
-            this.hostTransNo.PerformLayout();
-            this.hostCustName.ResumeLayout(false);
-            this.hostCustName.PerformLayout();
-            this.hostCustAddress.ResumeLayout(false);
-            this.hostCustAddress.PerformLayout();
+            this.hostInvoiceNo.ResumeLayout(false);
+            this.hostInvoiceNo.PerformLayout();
+            this.hostCustomerName.ResumeLayout(false);
+            this.hostCustomerName.PerformLayout();
+            this.hostCustomerAddress.ResumeLayout(false);
+            this.hostCustomerAddress.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -935,7 +935,7 @@ namespace PurchaseInvoices
         private PurchaseInvoices.HeaderPanel headerPanel;
         private PurchaseInvoices.FieldHost hostSearch;
         private System.Windows.Forms.TextBox txtSearch;
-        private PurchaseInvoices.ModernButton button1;
+        private PurchaseInvoices.ModernButton btnSearch;
         private PurchaseInvoices.ModernButton btnAllInvoices;
         private PurchaseInvoices.ModernButton btnPrevious;
         private PurchaseInvoices.ModernButton btnNext;
@@ -948,7 +948,7 @@ namespace PurchaseInvoices
         private PurchaseInvoices.ModernButton btnSave;
         private System.Windows.Forms.Panel contentPanel;
         private PurchaseInvoices.CardPanel gridCard;
-        private PurchaseInvoices.ModernGrid dgv_sales;
+        private PurchaseInvoices.ModernGrid dgvLines;
         private System.Windows.Forms.DataGridViewTextBoxColumn Slno;
         private System.Windows.Forms.DataGridViewTextBoxColumn ItemCode;
         private System.Windows.Forms.DataGridViewTextBoxColumn Description;
@@ -956,15 +956,15 @@ namespace PurchaseInvoices
         private System.Windows.Forms.DataGridViewTextBoxColumn Rate;
         private System.Windows.Forms.DataGridViewTextBoxColumn Amount;
         private PurchaseInvoices.CardPanel addCard;
-        private System.Windows.Forms.Label label4;
-        private PurchaseInvoices.ModernComboBox combo_Itemcode;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lblItem;
+        private PurchaseInvoices.ModernComboBox cboItem;
+        private System.Windows.Forms.Label lblRate;
         private PurchaseInvoices.FieldHost hostRate;
         private System.Windows.Forms.TextBox txtItemRate;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label lblQuantity;
         private PurchaseInvoices.FieldHost hostQty;
         private System.Windows.Forms.TextBox txtItemQty;
-        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label lblAmount;
         private PurchaseInvoices.FieldHost hostAmount;
         private System.Windows.Forms.TextBox txtAmount;
         private PurchaseInvoices.ModernButton btnAdd;
@@ -973,17 +973,17 @@ namespace PurchaseInvoices
         private PurchaseInvoices.ModernButton btnEditInvoice;
         private PurchaseInvoices.ModernButton btnDeleteInvoice;
         private PurchaseInvoices.ModernButton btnCancelEdit;
-        private System.Windows.Forms.Label label1;
-        private PurchaseInvoices.FieldHost hostTransNo;
-        private System.Windows.Forms.TextBox txtTransNo;
-        private System.Windows.Forms.Label label9;
-        private PurchaseInvoices.ModernComboBox comboCustId;
-        private System.Windows.Forms.Label label2;
-        private PurchaseInvoices.FieldHost hostCustName;
-        private System.Windows.Forms.TextBox txtcustname;
-        private System.Windows.Forms.Label label3;
-        private PurchaseInvoices.FieldHost hostCustAddress;
-        private System.Windows.Forms.TextBox txtcustaddresss;
+        private System.Windows.Forms.Label lblInvoiceNo;
+        private PurchaseInvoices.FieldHost hostInvoiceNo;
+        private System.Windows.Forms.TextBox txtInvoiceNo;
+        private System.Windows.Forms.Label lblCustomerId;
+        private PurchaseInvoices.ModernComboBox cboCustomer;
+        private System.Windows.Forms.Label lblCustomerName;
+        private PurchaseInvoices.FieldHost hostCustomerName;
+        private System.Windows.Forms.TextBox txtCustomerName;
+        private System.Windows.Forms.Label lblAddress;
+        private PurchaseInvoices.FieldHost hostCustomerAddress;
+        private System.Windows.Forms.TextBox txtCustomerAddress;
         private PurchaseInvoices.SummaryCard summaryCard;
     }
 }

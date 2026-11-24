@@ -28,7 +28,7 @@ namespace PurchaseInvoices
         {
             InitializeComponent();
             Theme.StyleWindow(this);
-            comboCustId.DropDownWidth = Theme.S(380);
+            cboCustomer.DropDownWidth = Theme.S(380);
         }
 
         private DateTime? InvoiceDate
@@ -58,17 +58,17 @@ namespace PurchaseInvoices
                 case Keys.Enter:
                     if (ActiveControl == txtItemQty)
                     {
-                        int before = dgv_sales.Rows.Count;
+                        int before = dgvLines.Rows.Count;
                         btnAdd.PerformClick();
-                        if (dgv_sales.Rows.Count > before)
+                        if (dgvLines.Rows.Count > before)
                         {
-                            combo_Itemcode.Focus();
+                            cboItem.Focus();
                         }
                         return true;
                     }
                     if (ActiveControl == txtSearch)
                     {
-                        button1.PerformClick();
+                        btnSearch.PerformClick();
                         return true;
                     }
                     break;
@@ -109,7 +109,7 @@ namespace PurchaseInvoices
         {
             this.Text = "Purchase Invoices";
             ActiveControl = txtSearch;
-            setControlsReadOnnly(true);
+            SetReadOnlyMode(true);
             SetDatabaseReady(false);
 
             ConnectionStringSettings setting = ConfigurationManager.ConnectionStrings["MYCON"];
@@ -136,7 +136,7 @@ namespace PurchaseInvoices
         }
         private void LoadFormData()
         {
-            setControlsReadOnnly(true);
+            SetReadOnlyMode(true);
             SetDatabaseReady(false);
 
             DatabaseStatus status;
@@ -161,10 +161,10 @@ namespace PurchaseInvoices
 
             con.Open();  //--fourth step...
             con.Close();  //--fifth step...
-            comboCustId.Items.Clear();
-            combo_Itemcode.Items.Clear();
-            bindComboBox(); // whene ever we have to called any method we can called it over here in from load form
-            bindComboBox_1();
+            cboCustomer.Items.Clear();
+            cboItem.Items.Clear();
+            LoadCustomers(); // whene ever we have to called any method we can called it over here in from load form
+            LoadItems();
             SetDatabaseReady(true);
             currentIndex = 0;
             transNumbers = GetTransNumbers();
@@ -173,14 +173,14 @@ namespace PurchaseInvoices
                 transNumbers.Reverse();
                 LoadRecord(transNumbers[currentIndex]);
             }
-            setControlsReadOnnly(true);
+            SetReadOnlyMode(true);
         }
         private void SetDatabaseReady(bool ready)
         {
             btnNew.Enabled = ready;
             btnPrevious.Enabled = ready;
             btnNext.Enabled = ready;
-            button1.Enabled = ready;
+            btnSearch.Enabled = ready;
             btnCustomers.Enabled = ready;
             btnItems.Enabled = ready;
             btnAllInvoices.Enabled = ready;
@@ -192,7 +192,7 @@ namespace PurchaseInvoices
         private void OpenInvoiceList()
         {
             string selected;
-            using (InvoiceListForm list = new InvoiceListForm(connectionString, currentTransId != null ? txtTransNo.Text : null))
+            using (InvoiceListForm list = new InvoiceListForm(connectionString, currentTransId != null ? txtInvoiceNo.Text : null))
             {
                 if (list.ShowDialog(this) != DialogResult.OK)
                 {
@@ -239,24 +239,24 @@ namespace PurchaseInvoices
         private void RefreshLookups()
         {
             bool editing = btnSave.Enabled;
-            string customer = comboCustId.SelectedItem?.ToString();
-            string item = combo_Itemcode.SelectedItem?.ToString();
-            comboCustId.Items.Clear();
-            combo_Itemcode.Items.Clear();
-            bindComboBox();
-            bindComboBox_1();
+            string customer = cboCustomer.SelectedItem?.ToString();
+            string item = cboItem.SelectedItem?.ToString();
+            cboCustomer.Items.Clear();
+            cboItem.Items.Clear();
+            LoadCustomers();
+            LoadItems();
             if (!editing)
             {
-                if (txtTransNo.Text.Length > 0)
+                if (txtInvoiceNo.Text.Length > 0)
                 {
-                    LoadRecord(txtTransNo.Text);
+                    LoadRecord(txtInvoiceNo.Text);
                 }
                 return;
             }
-            comboCustId.SelectedIndex = customer == null ? -1 : comboCustId.FindStringExact(customer);
-            if (comboCustId.SelectedIndex >= 0 && item != null)
+            cboCustomer.SelectedIndex = customer == null ? -1 : cboCustomer.FindStringExact(customer);
+            if (cboCustomer.SelectedIndex >= 0 && item != null)
             {
-                combo_Itemcode.SelectedIndex = combo_Itemcode.FindStringExact(item);
+                cboItem.SelectedIndex = cboItem.FindStringExact(item);
             }
         }
         private void btnCreateTables_Click(object sender, EventArgs e)
@@ -363,11 +363,11 @@ namespace PurchaseInvoices
                             currentTransId = Convert.ToInt32(sdrHeader["TRANS_ID"]);
                             editingTransId = null;
 
-                            txtTransNo.Text = TRANS_NO;
-                            comboCustId.SelectedIndex = comboCustId.FindStringExact(CUST_ID);
+                            txtInvoiceNo.Text = TRANS_NO;
+                            cboCustomer.SelectedIndex = cboCustomer.FindStringExact(CUST_ID);
                             InvoiceTotal = TOTAL_AMOUNT;
 
-                            dgv_sales.Rows.Clear();
+                            dgvLines.Rows.Clear();
                             using (SqlDataReader sdrDetail = cmdDetail.ExecuteReader())
                             {
                                 while (sdrDetail.Read())
@@ -380,10 +380,10 @@ namespace PurchaseInvoices
 
                                     string ITEM_DESCRIPTION = GetDescription(ITEM_CODE);
 
-                                    dgv_sales.Rows.Add(SLNO, ITEM_CODE, ITEM_DESCRIPTION, QTY, RATE, AMOUNT);
+                                    dgvLines.Rows.Add(SLNO, ITEM_CODE, ITEM_DESCRIPTION, QTY, RATE, AMOUNT);
                                 }
                             }
-                            setControlsReadOnnly(true);
+                            SetReadOnlyMode(true);
                             found = true;
                         }
                         else if (reportMissing)
@@ -415,32 +415,32 @@ namespace PurchaseInvoices
             SqlCommand cmd = new SqlCommand(qry, con);
             con.Open();
             object result = cmd.ExecuteScalar();
-            txtTransNo.Text = result.ToString();
+            txtInvoiceNo.Text = result.ToString();
             con.Close();
             InvoiceDate = null;
-            comboCustId.SelectedIndex = -1;
-            txtcustname.Text = string.Empty;
-            txtcustaddresss.Text = string.Empty;
-            combo_Itemcode.SelectedIndex = -1;
+            cboCustomer.SelectedIndex = -1;
+            txtCustomerName.Text = string.Empty;
+            txtCustomerAddress.Text = string.Empty;
+            cboItem.SelectedIndex = -1;
             txtItemRate.Text = string.Empty;
             txtItemQty.Text = string.Empty;
             txtAmount.Text = string.Empty;
             InvoiceTotal = string.Empty;
             txtSearch.Text = string.Empty;
-            dgv_sales.Rows.Clear();
-            setControlsReadOnnly(!true);
+            dgvLines.Rows.Clear();
+            SetReadOnlyMode(!true);
             editSnapshot = InvoiceSignature();
         }
 
         private bool isDataSaved = false;
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (!dgv_sales.EndEdit())
+            if (!dgvLines.EndEdit())
             {
                 return;
             }
 
-            if (dgv_sales.Rows.Count == 0)
+            if (dgvLines.Rows.Count == 0)
             {
                 MessageBox.Show("Please add at least one item before saving.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -448,7 +448,7 @@ namespace PurchaseInvoices
 
             isDataSaved = false;
             bool updating = editingTransId.HasValue;
-            string shownTransNo = txtTransNo.Text;
+            string shownTransNo = txtInvoiceNo.Text;
             string savedTransNo;
             int savedTransId;
             try
@@ -464,7 +464,7 @@ namespace PurchaseInvoices
                         headerUpdateQuery += "select TRANS_ID, TRANS_NO, TRANS_DATE from PURCH_HEADER where TRANS_ID = @TRANS_ID;";
                         using (SqlCommand headerCmd = new SqlCommand(headerUpdateQuery, con, transaction))
                         {
-                            headerCmd.Parameters.AddWithValue("@CUST_ID", comboCustId.Text);
+                            headerCmd.Parameters.AddWithValue("@CUST_ID", cboCustomer.Text);
                             headerCmd.Parameters.AddWithValue("@TOTAL_AMOUNT", Convert.ToDecimal(InvoiceTotal));
                             headerCmd.Parameters.AddWithValue("@TRANS_ID", editingTransId.Value);
                             using (SqlDataReader sdr = headerCmd.ExecuteReader())
@@ -492,7 +492,7 @@ namespace PurchaseInvoices
 
                         using (SqlCommand headerCmd = new SqlCommand(headerInsertQuery, con, transaction))
                         {
-                            headerCmd.Parameters.AddWithValue("@CUST_ID", comboCustId.Text);
+                            headerCmd.Parameters.AddWithValue("@CUST_ID", cboCustomer.Text);
                             headerCmd.Parameters.AddWithValue("@TOTAL_AMOUNT", Convert.ToDecimal(InvoiceTotal));
                             using (SqlDataReader sdr = headerCmd.ExecuteReader())
                             {
@@ -509,12 +509,12 @@ namespace PurchaseInvoices
                     List<SqlParameter> detailParams = new List<SqlParameter>();
                     detailParams.Add(new SqlParameter("@TRANS_ID", lastTransId));
 
-                    for (int i = 0; i < dgv_sales.Rows.Count; i++)
+                    for (int i = 0; i < dgvLines.Rows.Count; i++)
                     {
-                        string itemCode = dgv_sales.Rows[i].Cells[1].Value.ToString();
-                        string qty = dgv_sales.Rows[i].Cells[3].Value.ToString();
-                        string rate = dgv_sales.Rows[i].Cells[4].Value.ToString();
-                        string amount = dgv_sales.Rows[i].Cells[5].Value.ToString();
+                        string itemCode = dgvLines.Rows[i].Cells[1].Value.ToString();
+                        string qty = dgvLines.Rows[i].Cells[3].Value.ToString();
+                        string rate = dgvLines.Rows[i].Cells[4].Value.ToString();
+                        string amount = dgvLines.Rows[i].Cells[5].Value.ToString();
 
                         detailInsertQuery += $"(@TRANS_ID, @SLNO{i}, @ITEM_CODE{i}, @QTY{i}, @RATE{i}, @AMOUNT{i})";
                         detailParams.Add(new SqlParameter($"@SLNO{i}", i + 1));
@@ -522,7 +522,7 @@ namespace PurchaseInvoices
                         detailParams.Add(new SqlParameter($"@QTY{i}", Convert.ToDecimal(qty)));
                         detailParams.Add(new SqlParameter($"@RATE{i}", Convert.ToDecimal(rate)));
                         detailParams.Add(new SqlParameter($"@AMOUNT{i}", Convert.ToDecimal(amount)));
-                        if (i < dgv_sales.Rows.Count - 1)
+                        if (i < dgvLines.Rows.Count - 1)
                         {
                             detailInsertQuery += ", ";
                         }
@@ -538,8 +538,8 @@ namespace PurchaseInvoices
                 isDataSaved = true;
                 currentTransId = savedTransId;
                 editingTransId = null;
-                txtTransNo.Text = savedTransNo;
-                setControlsReadOnnly(true);
+                txtInvoiceNo.Text = savedTransNo;
+                SetReadOnlyMode(true);
 
                 string message = updating ? $"Invoice {savedTransNo} updated successfully." : "Data inserted successfully!";
                 if (!updating && savedTransNo != shownTransNo)
@@ -561,15 +561,15 @@ namespace PurchaseInvoices
             {
                 transNumbers = GetTransNumbers();
                 transNumbers.Reverse();
-                currentIndex = Math.Max(0, transNumbers.IndexOf(txtTransNo.Text));
+                currentIndex = Math.Max(0, transNumbers.IndexOf(txtInvoiceNo.Text));
             }
         }
-        private void setControlsReadOnnly(bool readOnly)
+        private void SetReadOnlyMode(bool readOnly)
         {
-            comboCustId.Enabled = !readOnly;
-            combo_Itemcode.Enabled = !readOnly;
+            cboCustomer.Enabled = !readOnly;
+            cboItem.Enabled = !readOnly;
             txtItemQty.ReadOnly = readOnly;
-            dgv_sales.ReadOnly = readOnly;
+            dgvLines.ReadOnly = readOnly;
             Slno.ReadOnly = true;
             ItemCode.ReadOnly = true;
             Description.ReadOnly = true;
@@ -581,7 +581,7 @@ namespace PurchaseInvoices
             btnCancelEdit.Visible = !readOnly;
             btnEditInvoice.Enabled = readOnly && currentTransId != null;
             btnDeleteInvoice.Enabled = readOnly && currentTransId != null;
-            detailsCard.Title = readOnly ? "Invoice details" : editingTransId != null ? $"Editing invoice {txtTransNo.Text}" : "New invoice";
+            detailsCard.Title = readOnly ? "Invoice details" : editingTransId != null ? $"Editing invoice {txtInvoiceNo.Text}" : "New invoice";
         }
         private void btnEditInvoice_Click(object sender, EventArgs e)
         {
@@ -590,9 +590,9 @@ namespace PurchaseInvoices
                 return;
             }
             editingTransId = currentTransId;
-            setControlsReadOnnly(false);
+            SetReadOnlyMode(false);
             editSnapshot = InvoiceSignature();
-            ActiveControl = combo_Itemcode;
+            ActiveControl = cboItem;
         }
         private void btnCancelEdit_Click(object sender, EventArgs e)
         {
@@ -602,7 +602,7 @@ namespace PurchaseInvoices
             }
             bool wasEditingSaved = editingTransId != null;
             editingTransId = null;
-            if (wasEditingSaved && LoadRecord(txtTransNo.Text, false))
+            if (wasEditingSaved && LoadRecord(txtInvoiceNo.Text, false))
             {
                 return;
             }
@@ -627,11 +627,11 @@ namespace PurchaseInvoices
             {
                 return;
             }
-            string transNo = txtTransNo.Text;
-            int lines = dgv_sales.Rows.Count;
+            string transNo = txtInvoiceNo.Text;
+            int lines = dgvLines.Rows.Count;
             decimal total;
             string totalText = decimal.TryParse(InvoiceTotal, NumberStyles.Number, CultureInfo.CurrentCulture, out total) ? total.ToString("N2", CultureInfo.CurrentCulture) : InvoiceTotal;
-            string question = $"Delete invoice {transNo}?\n\n{txtcustname.Text}  ·  {lines} {(lines == 1 ? "line" : "lines")}  ·  total {totalText}\n\nThis can't be undone.";
+            string question = $"Delete invoice {transNo}?\n\n{txtCustomerName.Text}  ·  {lines} {(lines == 1 ? "line" : "lines")}  ·  total {totalText}\n\nThis can't be undone.";
             if (MessageBox.Show(question, "Delete invoice", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
             {
                 return;
@@ -685,22 +685,22 @@ namespace PurchaseInvoices
             currentTransId = null;
             editingTransId = null;
             InvoiceDate = null;
-            txtTransNo.Text = string.Empty;
-            comboCustId.SelectedIndex = -1;
-            txtcustname.Text = string.Empty;
-            txtcustaddresss.Text = string.Empty;
-            combo_Itemcode.SelectedIndex = -1;
+            txtInvoiceNo.Text = string.Empty;
+            cboCustomer.SelectedIndex = -1;
+            txtCustomerName.Text = string.Empty;
+            txtCustomerAddress.Text = string.Empty;
+            cboItem.SelectedIndex = -1;
             txtItemRate.Text = string.Empty;
             txtItemQty.Text = string.Empty;
             txtAmount.Text = string.Empty;
             InvoiceTotal = string.Empty;
-            dgv_sales.Rows.Clear();
-            setControlsReadOnnly(true);
+            dgvLines.Rows.Clear();
+            SetReadOnlyMode(true);
         }
         private string InvoiceSignature()
         {
-            StringBuilder signature = new StringBuilder(comboCustId.SelectedItem?.ToString() ?? string.Empty);
-            foreach (DataGridViewRow row in dgv_sales.Rows)
+            StringBuilder signature = new StringBuilder(cboCustomer.SelectedItem?.ToString() ?? string.Empty);
+            foreach (DataGridViewRow row in dgvLines.Rows)
             {
                 signature.Append('|').Append(row.Cells[1].Value).Append(';').Append(row.Cells[3].Value).Append(';').Append(row.Cells[4].Value);
             }
@@ -712,12 +712,12 @@ namespace PurchaseInvoices
             {
                 return true;
             }
-            dgv_sales.EndEdit();
+            dgvLines.EndEdit();
             if (InvoiceSignature() == editSnapshot)
             {
                 return true;
             }
-            string what = editingTransId != null ? $"your changes to invoice {txtTransNo.Text}" : "this new invoice";
+            string what = editingTransId != null ? $"your changes to invoice {txtInvoiceNo.Text}" : "this new invoice";
             return MessageBox.Show($"Discard {what}?", "Unsaved changes", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
         }
         private void InvoiceForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -727,7 +727,7 @@ namespace PurchaseInvoices
                 e.Cancel = true;
             }
         }
-        private void bindComboBox()
+        private void LoadCustomers()
         {
             String qry = "select * from CUSTOMER_MASTER order by CUSTID";
             SqlCommand cmd = new SqlCommand(qry, con);
@@ -737,19 +737,19 @@ namespace PurchaseInvoices
             while (dr.Read())
             {
                 string CUSTID = dr.GetString(0);
-                comboCustId.Items.Add(CUSTID);
+                cboCustomer.Items.Add(CUSTID);
                 names[CUSTID] = dr["CUST_NAME"].ToString();
             }
             con.Close();
-            comboCustId.Descriptions = names;
+            cboCustomer.Descriptions = names;
         }
-        private void comboCustId_SelectedIndexChanged(object sender, EventArgs e)
+        private void cboCustomer_SelectedIndexChanged(object sender, EventArgs e)
         {
-            txtcustname.Text = string.Empty;
-            txtcustaddresss.Text = string.Empty;
-            if (comboCustId.SelectedItem != null)
+            txtCustomerName.Text = string.Empty;
+            txtCustomerAddress.Text = string.Empty;
+            if (cboCustomer.SelectedItem != null)
             {
-                string CUSTID = Convert.ToString(comboCustId.SelectedItem.ToString());
+                string CUSTID = Convert.ToString(cboCustomer.SelectedItem.ToString());
                 String qry = "select * from CUSTOMER_MASTER where CUSTID = @CUSTID";
                 SqlDataAdapter sda = new SqlDataAdapter(qry, con);
                 sda.SelectCommand.Parameters.AddWithValue("@CUSTID", CUSTID);
@@ -757,45 +757,45 @@ namespace PurchaseInvoices
                 sda.Fill(data);
                 if (data.Rows.Count > 0)
                 {
-                    txtcustname.Text = data.Rows[0]["CUST_NAME"].ToString();
-                    txtcustaddresss.Text = data.Rows[0]["CUST_ADDRESS"].ToString();
+                    txtCustomerName.Text = data.Rows[0]["CUST_NAME"].ToString();
+                    txtCustomerAddress.Text = data.Rows[0]["CUST_ADDRESS"].ToString();
                 }
             }
         }
-        private void bindComboBox_1()
+        private void LoadItems()
         {
             string qry = "select * from ITEM_MASTER order by ITEM_CODE";
             SqlCommand cmd = new SqlCommand(qry, con);
             con.Open();
             SqlDataReader sdr = cmd.ExecuteReader();
             Dictionary<string, string> descriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            combo_Itemcode.Descriptions = descriptions;
+            cboItem.Descriptions = descriptions;
             while (sdr.Read())
             {
                 string itmcode = sdr.GetString(0);
                 descriptions[itmcode] = sdr["ITEM_DESCRIPTION"].ToString();
-                combo_Itemcode.Items.Add(itmcode);
+                cboItem.Items.Add(itmcode);
             }
             con.Close();
         }
 
-        private void combo_Itemcode_SelectedIndexChanged(object sender, EventArgs e)
+        private void cboItem_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (combo_Itemcode.SelectedItem == null)
+            if (cboItem.SelectedItem == null)
             {
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(txtTransNo.Text) ||
-                string.IsNullOrWhiteSpace(comboCustId.Text) ||
-                string.IsNullOrWhiteSpace(txtcustname.Text) ||
-                string.IsNullOrWhiteSpace(txtcustaddresss.Text))
+            if (string.IsNullOrWhiteSpace(txtInvoiceNo.Text) ||
+                string.IsNullOrWhiteSpace(cboCustomer.Text) ||
+                string.IsNullOrWhiteSpace(txtCustomerName.Text) ||
+                string.IsNullOrWhiteSpace(txtCustomerAddress.Text))
             {
                 MessageBox.Show("Please fill the customer details before select the item code.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            string itmcode = Convert.ToString(combo_Itemcode.SelectedItem.ToString());
+            string itmcode = Convert.ToString(cboItem.SelectedItem.ToString());
             string qury = "select * from ITEM_MASTER where ITEM_CODE = @ITEM_CODE";
             SqlDataAdapter sda = new SqlDataAdapter(qury, con);
             sda.SelectCommand.Parameters.AddWithValue("@ITEM_CODE", itmcode);
@@ -823,7 +823,7 @@ namespace PurchaseInvoices
 
         }
 
-        private void txtItemOrderQty(object sender, KeyPressEventArgs e)
+        private void txtItemQty_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar)) /*&& e.KeyChar != '.')*/
             {
@@ -837,7 +837,7 @@ namespace PurchaseInvoices
                 MessageBox.Show("Please fill in all fields before adding.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            String itemcode = combo_Itemcode.Text;
+            String itemcode = cboItem.Text;
 
             if (IsItemCodeExists(itemcode))
             {
@@ -846,9 +846,9 @@ namespace PurchaseInvoices
             }
 
             string description = GetDescription(itemcode);
-            dgv_sales.Rows.Insert(0, new object[]
+            dgvLines.Rows.Insert(0, new object[]
             {
-                    dgv_sales.Rows.Count+1,
+                    dgvLines.Rows.Count+1,
                     itemcode,
                     description,
                     txtItemQty.Text,
@@ -864,10 +864,10 @@ namespace PurchaseInvoices
         private bool ValidateInput()
         {
             return
-                !string.IsNullOrWhiteSpace(comboCustId.Text) &&
-                !string.IsNullOrWhiteSpace(txtcustname.Text) &&
-                !string.IsNullOrWhiteSpace(txtcustaddresss.Text) &&
-                !string.IsNullOrWhiteSpace(combo_Itemcode.Text) &&
+                !string.IsNullOrWhiteSpace(cboCustomer.Text) &&
+                !string.IsNullOrWhiteSpace(txtCustomerName.Text) &&
+                !string.IsNullOrWhiteSpace(txtCustomerAddress.Text) &&
+                !string.IsNullOrWhiteSpace(cboItem.Text) &&
                 !string.IsNullOrWhiteSpace(txtItemQty.Text) &&
                 !string.IsNullOrWhiteSpace(txtAmount.Text) &&
                 IsValidQty(txtItemQty.Text) &&
@@ -910,15 +910,15 @@ namespace PurchaseInvoices
         }
         private void UpdateSlno()
         {
-            for (int i = 0; i < dgv_sales.Rows.Count; i++)
+            for (int i = 0; i < dgvLines.Rows.Count; i++)
             {
-                dgv_sales.Rows[i].Cells[0].Value = i + 1;
+                dgvLines.Rows[i].Cells[0].Value = i + 1;
             }
         }
         private void UpdateTotalSum()
         {
             double totalTxtAmout = 0;
-            foreach (DataGridViewRow row in dgv_sales.Rows)
+            foreach (DataGridViewRow row in dgvLines.Rows)
             {
                 double cellValue;
                 if (double.TryParse(row.Cells[5].Value?.ToString(), out cellValue))
@@ -929,11 +929,11 @@ namespace PurchaseInvoices
             InvoiceTotal = totalTxtAmout.ToString();
         }
 
-        private void dgv_sales_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        private void dgvLines_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
             if (e.ColumnIndex == 3 || e.ColumnIndex == 4)
             {
-                DataGridViewRow row = dgv_sales.Rows[e.RowIndex];
+                DataGridViewRow row = dgvLines.Rows[e.RowIndex];
                 double qty, rate;
                 double.TryParse(row.Cells[3].Value?.ToString(), out qty);
                 double.TryParse(row.Cells[4].Value?.ToString(), out rate);
@@ -948,9 +948,9 @@ namespace PurchaseInvoices
             return int.TryParse(value, NumberStyles.None, CultureInfo.CurrentCulture, out qty) && qty <= 999999;
         }
 
-        private void dgv_sales_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        private void dgvLines_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
-            if (!dgv_sales.IsCurrentCellInEditMode)
+            if (!dgvLines.IsCurrentCellInEditMode)
             {
                 return;
             }
@@ -975,7 +975,7 @@ namespace PurchaseInvoices
             }
         }
 
-        private void dgv_sales_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
+        private void dgvLines_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
         {
             UpdateSlno();
             UpdateTotalSum();
@@ -983,7 +983,7 @@ namespace PurchaseInvoices
 
         private bool IsItemCodeExists(string itemcode)
         {
-            foreach (DataGridViewRow row in dgv_sales.Rows)
+            foreach (DataGridViewRow row in dgvLines.Rows)
             {
                 if (row.Cells[1].Value != null && row.Cells[1].Value.ToString() == itemcode)
                 {
@@ -993,7 +993,7 @@ namespace PurchaseInvoices
             }
             return false;
         }
-        private void button1_Click(object sender, EventArgs e)
+        private void btnSearch_Click(object sender, EventArgs e)
         {
             string searchInvoiceNum = txtSearch.Text.Trim();
 
@@ -1050,11 +1050,11 @@ namespace PurchaseInvoices
         }
         private void btnPrint_Click(object sender, EventArgs e)
         {
-            if (!dgv_sales.EndEdit())
+            if (!dgvLines.EndEdit())
             {
                 return;
             }
-            if (dgv_sales.Rows.Count == 0)
+            if (dgvLines.Rows.Count == 0)
             {
                 MessageBox.Show("There are no items to print. Add at least one item first.", "Print", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -1075,15 +1075,15 @@ namespace PurchaseInvoices
             bool draft = btnSave.Enabled;
             InvoicePrintData data = new InvoicePrintData
             {
-                InvoiceNo = txtTransNo.Text.Trim(),
+                InvoiceNo = txtInvoiceNo.Text.Trim(),
                 Date = InvoiceDate ?? DateTime.Now,
                 IsDraft = draft,
-                CustomerId = comboCustId.SelectedItem?.ToString() ?? string.Empty,
-                CustomerName = txtcustname.Text.Trim(),
-                CustomerAddress = txtcustaddresss.Text.Trim(),
+                CustomerId = cboCustomer.SelectedItem?.ToString() ?? string.Empty,
+                CustomerName = txtCustomerName.Text.Trim(),
+                CustomerAddress = txtCustomerAddress.Text.Trim(),
             };
             decimal sum = 0;
-            foreach (DataGridViewRow row in dgv_sales.Rows)
+            foreach (DataGridViewRow row in dgvLines.Rows)
             {
                 decimal amount = ParseAmount(row.Cells[5].Value);
                 sum += amount;
