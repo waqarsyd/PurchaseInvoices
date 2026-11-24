@@ -107,6 +107,7 @@ namespace PurchaseInvoices
             this.definition = definition;
             boxes = new[] { txtField1, txtField2, txtField3 };
             labels = new[] { lblField1, lblField2, lblField3 };
+            btnDelete.Visible = Session.IsAdmin;
             statusTimer.Tick += (s, e) => { statusTimer.Stop(); UpdateCount(); };
             FormClosed += (s, e) => statusTimer.Dispose();
             ApplyDefinition();
@@ -528,7 +529,7 @@ namespace PurchaseInvoices
 
         private void Delete()
         {
-            if (isNew || currentKey == null)
+            if (isNew || currentKey == null || !Session.IsAdmin)
             {
                 return;
             }

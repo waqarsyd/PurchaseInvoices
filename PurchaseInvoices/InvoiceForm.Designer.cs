@@ -50,7 +50,8 @@ namespace PurchaseInvoices
             this.btnAdd = new PurchaseInvoices.ModernButton();
             this.btnCustomers = new PurchaseInvoices.ModernButton();
             this.btnItems = new PurchaseInvoices.ModernButton();
-            this.btnDatabase = new PurchaseInvoices.ModernButton();
+            this.btnReports = new PurchaseInvoices.ModernButton();
+            this.btnAccount = new PurchaseInvoices.AccountButton();
             this.headerPanel = new PurchaseInvoices.HeaderPanel();
             this.hostSearch = new PurchaseInvoices.FieldHost();
             this.txtSearch = new System.Windows.Forms.TextBox();
@@ -224,7 +225,7 @@ namespace PurchaseInvoices
             this.btnPrevious.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
             this.btnPrevious.Glyph = "";
             this.btnPrevious.Kind = PurchaseInvoices.ButtonKind.Ghost;
-            this.btnPrevious.Location = new System.Drawing.Point(1006, 14);
+            this.btnPrevious.Location = new System.Drawing.Point(942, 14);
             this.btnPrevious.Name = "btnPrevious";
             this.btnPrevious.Size = new System.Drawing.Size(44, 36);
             this.btnPrevious.TabIndex = 3;
@@ -242,7 +243,7 @@ namespace PurchaseInvoices
             this.btnNext.Glyph = "";
             this.btnNext.GlyphAfterText = true;
             this.btnNext.Kind = PurchaseInvoices.ButtonKind.Ghost;
-            this.btnNext.Location = new System.Drawing.Point(1056, 14);
+            this.btnNext.Location = new System.Drawing.Point(992, 14);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(44, 36);
             this.btnNext.TabIndex = 4;
@@ -258,7 +259,7 @@ namespace PurchaseInvoices
             this.btnSearch.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSearch.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
             this.btnSearch.Kind = PurchaseInvoices.ButtonKind.Ghost;
-            this.btnSearch.Location = new System.Drawing.Point(738, 14);
+            this.btnSearch.Location = new System.Drawing.Point(674, 14);
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(100, 36);
             this.btnSearch.TabIndex = 1;
@@ -276,7 +277,7 @@ namespace PurchaseInvoices
             this.btnAllInvoices.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
             this.btnAllInvoices.Glyph = "";
             this.btnAllInvoices.Kind = PurchaseInvoices.ButtonKind.Ghost;
-            this.btnAllInvoices.Location = new System.Drawing.Point(854, 14);
+            this.btnAllInvoices.Location = new System.Drawing.Point(790, 14);
             this.btnAllInvoices.Name = "btnAllInvoices";
             this.btnAllInvoices.Size = new System.Drawing.Size(140, 36);
             this.btnAllInvoices.TabIndex = 2;
@@ -335,30 +336,42 @@ namespace PurchaseInvoices
             this.btnItems.UseVisualStyleBackColor = false;
             this.btnItems.Click += new System.EventHandler(this.btnItems_Click);
             // 
-            // btnDatabase
+            // btnReports
             // 
-            this.btnDatabase.BackColor = System.Drawing.Color.Transparent;
-            this.btnDatabase.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnDatabase.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnDatabase.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
-            this.btnDatabase.Glyph = "";
-            this.btnDatabase.Location = new System.Drawing.Point(20, 12);
-            this.btnDatabase.Name = "btnDatabase";
-            this.btnDatabase.Size = new System.Drawing.Size(160, 36);
-            this.btnDatabase.TabIndex = 0;
-            this.btnDatabase.Text = "Database";
-            this.toolTip.SetToolTip(this.btnDatabase, "Choose the SQL Server and database, test the connection, or create missing tables");
-            this.btnDatabase.UseVisualStyleBackColor = false;
-            this.btnDatabase.Click += new System.EventHandler(this.btnDatabase_Click);
+            this.btnReports.BackColor = System.Drawing.Color.Transparent;
+            this.btnReports.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnReports.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnReports.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnReports.Glyph = "\uE9F9";
+            this.btnReports.Location = new System.Drawing.Point(20, 12);
+            this.btnReports.Name = "btnReports";
+            this.btnReports.Size = new System.Drawing.Size(160, 36);
+            this.btnReports.TabIndex = 0;
+            this.btnReports.Text = "Reports";
+            this.btnReports.Visible = false;
+            this.toolTip.SetToolTip(this.btnReports, "Purchase reports by customer, item and month (Ctrl+R)");
+            this.btnReports.UseVisualStyleBackColor = false;
+            this.btnReports.Click += new System.EventHandler(this.btnReports_Click);
+            // 
+            // btnAccount
+            // 
+            this.btnAccount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAccount.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnAccount.Location = new System.Drawing.Point(1044, 14);
+            this.btnAccount.Name = "btnAccount";
+            this.btnAccount.Size = new System.Drawing.Size(56, 36);
+            this.btnAccount.TabIndex = 5;
+            this.toolTip.SetToolTip(this.btnAccount, "Your account");
+            this.btnAccount.Click += new System.EventHandler(this.btnAccount_Click);
             // 
             // headerPanel
-            // 
-            this.headerPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
+            //             this.headerPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             this.headerPanel.Controls.Add(this.hostSearch);
             this.headerPanel.Controls.Add(this.btnSearch);
             this.headerPanel.Controls.Add(this.btnAllInvoices);
             this.headerPanel.Controls.Add(this.btnPrevious);
             this.headerPanel.Controls.Add(this.btnNext);
+            this.headerPanel.Controls.Add(this.btnAccount);
             this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.headerPanel.ForeColor = System.Drawing.Color.White;
             this.headerPanel.ShowLogo = true;
@@ -376,7 +389,7 @@ namespace PurchaseInvoices
             this.hostSearch.Controls.Add(this.txtSearch);
             this.hostSearch.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.hostSearch.Glyph = "";
-            this.hostSearch.Location = new System.Drawing.Point(530, 14);
+            this.hostSearch.Location = new System.Drawing.Point(466, 14);
             this.hostSearch.Name = "hostSearch";
             this.hostSearch.Placeholder = "Search invoice no.";
             this.hostSearch.Size = new System.Drawing.Size(200, 36);
@@ -396,7 +409,7 @@ namespace PurchaseInvoices
             // footerPanel
             // 
             this.footerPanel.BackColor = System.Drawing.Color.White;
-            this.footerPanel.Controls.Add(this.btnDatabase);
+            this.footerPanel.Controls.Add(this.btnReports);
             this.footerPanel.Controls.Add(this.btnCustomers);
             this.footerPanel.Controls.Add(this.btnItems);
             this.footerPanel.Controls.Add(this.btnPrint);
@@ -940,7 +953,8 @@ namespace PurchaseInvoices
         private PurchaseInvoices.ModernButton btnPrevious;
         private PurchaseInvoices.ModernButton btnNext;
         private PurchaseInvoices.FooterPanel footerPanel;
-        private PurchaseInvoices.ModernButton btnDatabase;
+        private PurchaseInvoices.ModernButton btnReports;
+        private PurchaseInvoices.AccountButton btnAccount;
         private PurchaseInvoices.ModernButton btnCustomers;
         private PurchaseInvoices.ModernButton btnItems;
         private PurchaseInvoices.ModernButton btnPrint;

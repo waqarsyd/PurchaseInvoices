@@ -417,7 +417,7 @@ namespace PurchaseInvoices
             }
         }
 
-        private void DrawContent(Graphics g, Color color)
+        protected virtual void DrawContent(Graphics g, Color color)
         {
             const TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.VerticalCenter | TextFormatFlags.Left;
             Size textSize = TextRenderer.MeasureText(g, Text, Font, Size.Empty, flags);
@@ -1292,6 +1292,235 @@ namespace PurchaseInvoices
                 TextRenderer.DrawText(g, emptyTitle, titleFont, new Rectangle(0, center - Theme.S(18), Width, Theme.S(24)), Theme.TextSecondary, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 TextRenderer.DrawText(g, emptyHint, hintFont, new Rectangle(0, center + Theme.S(6), Width, Theme.S(22)), Theme.TextFaint, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
+        }
+    }
+
+    public class BrandPanel : Panel
+    {
+        private string companyText = string.Empty;
+        private string versionText = string.Empty;
+
+        public BrandPanel()
+        {
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+            BackColor = Theme.HeaderStart;
+        }
+
+        [DefaultValue("")]
+        public string CompanyText { get { return companyText; } set { companyText = value ?? string.Empty; Invalidate(); } }
+
+        [DefaultValue("")]
+        public string VersionText { get { return versionText; } set { versionText = value ?? string.Empty; Invalidate(); } }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            if (Width <= 0 || Height <= 0)
+            {
+                return;
+            }
+            using (LinearGradientBrush brush = new LinearGradientBrush(ClientRectangle, Theme.HeaderStart, Theme.HeaderEnd, 60f))
+            {
+                g.FillRectangle(brush, ClientRectangle);
+            }
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            Glow(g, new Rectangle(-Theme.S(160), -Theme.S(140), Theme.S(460), Theme.S(380)), Color.FromArgb(70, Theme.Accent2));
+            Glow(g, new Rectangle(Width - Theme.S(220), Height - Theme.S(260), Theme.S(420), Theme.S(380)), Color.FromArgb(60, Theme.Accent));
+
+            int left = Theme.S(40);
+            int width = Width - left * 2;
+            int logoSize = Theme.S(76);
+            Theme.DrawLogo(g, new Rectangle(left - Theme.S(4), Theme.S(56), logoSize, logoSize));
+
+            int y = Theme.S(56) + logoSize + Theme.S(22);
+            using (Font title = new Font("Segoe UI Semibold", 20f))
+            {
+                TextRenderer.DrawText(g, "Purchase Invoices", title, new Rectangle(left, y, width, Theme.S(40)), Color.White, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+            }
+            y += Theme.S(46);
+            using (Font tagline = new Font("Segoe UI", 10.5f))
+            {
+                Rectangle box = new Rectangle(left, y, width, Theme.S(64));
+                TextRenderer.DrawText(g, "Customers, items, invoices and reports for your purchasing team, all in one place.", tagline, box,
+                    Color.FromArgb(199, 210, 254), TextFormatFlags.NoPadding | TextFormatFlags.WordBreak);
+            }
+            y += Theme.S(84);
+
+            string[] features = { "Fast invoice entry with keyboard shortcuts", "Reports, printing and CSV export", "Users, roles and an activity log", "Backups you can restore in minutes" };
+            using (Font feature = new Font("Segoe UI", 9.75f))
+            {
+                foreach (string text in features)
+                {
+                    Rectangle chip = new Rectangle(left, y, Theme.S(22), Theme.S(22));
+                    using (GraphicsPath path = Theme.RoundedRect(chip, chip.Width / 2f))
+                    using (SolidBrush fill = new SolidBrush(Color.FromArgb(48, 52, 211, 153)))
+                    {
+                        g.FillPath(fill, path);
+                    }
+                    Theme.DrawGlyph(g, "", 8f, new Rectangle(chip.X, chip.Y + Theme.S(1), chip.Width, chip.Height), Color.FromArgb(110, 231, 183), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    TextRenderer.DrawText(g, text, feature, new Rectangle(chip.Right + Theme.S(12), y, width - chip.Width - Theme.S(12), chip.Height), Color.FromArgb(226, 232, 240),
+                        TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+                    y += Theme.S(34);
+                }
+            }
+
+            using (Font small = new Font("Segoe UI", 8.75f))
+            {
+                int bottom = Height - Theme.S(34);
+                if (versionText.Length > 0)
+                {
+                    TextRenderer.DrawText(g, versionText, small, new Rectangle(left, bottom, width, Theme.S(18)), Color.FromArgb(129, 140, 248), TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
+                }
+                if (companyText.Length > 0)
+                {
+                    using (Font company = new Font("Segoe UI Semibold", 9.75f))
+                    {
+                        TextRenderer.DrawText(g, companyText, company, new Rectangle(left, bottom - Theme.S(24), width, Theme.S(20)), Color.White, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
+                    }
+                }
+            }
+        }
+
+        private static void Glow(Graphics g, Rectangle bounds, Color center)
+        {
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.AddEllipse(bounds);
+                using (PathGradientBrush brush = new PathGradientBrush(path))
+                {
+                    brush.CenterColor = center;
+                    brush.SurroundColors = new[] { Color.FromArgb(0, center) };
+                    g.FillPath(brush, path);
+                }
+            }
+        }
+    }
+
+    public class AccountButton : ModernButton
+    {
+        private string initials = string.Empty;
+
+        public AccountButton()
+        {
+            Kind = ButtonKind.Ghost;
+        }
+
+        [DefaultValue("")]
+        public string Initials { get { return initials; } set { initials = value ?? string.Empty; Invalidate(); } }
+
+        protected override void DrawContent(Graphics g, Color color)
+        {
+            int size = Math.Min(Height - Theme.S(10), Theme.S(28));
+            Rectangle avatar = new Rectangle(Theme.S(6), (Height - size) / 2, size, size);
+            using (LinearGradientBrush brush = new LinearGradientBrush(avatar, Color.FromArgb(52, 211, 153), Color.FromArgb(13, 148, 136), 45f))
+            {
+                g.FillEllipse(brush, avatar);
+            }
+            using (Font font = new Font("Segoe UI Semibold", 8.25f))
+            {
+                TextRenderer.DrawText(g, initials, font, avatar, Color.White,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+            }
+            Rectangle chevron = new Rectangle(avatar.Right, 0, Width - avatar.Right - Theme.S(2), Height);
+            Theme.DrawGlyph(g, "", 7.5f, new Rectangle(chevron.X, chevron.Y + Theme.S(1), chevron.Width, chevron.Height), color, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        }
+    }
+
+    public class ModernMenuRenderer : ToolStripProfessionalRenderer
+    {
+        public ModernMenuRenderer() : base(new MenuColors())
+        {
+            RoundedEdges = false;
+        }
+
+        public static ContextMenuStrip CreateMenu()
+        {
+            ContextMenuStrip menu = new ContextMenuStrip
+            {
+                Renderer = new ModernMenuRenderer(),
+                Font = new Font("Segoe UI", 9.75f),
+                ShowImageMargin = true,
+                ImageScalingSize = new Size(Theme.S(16), Theme.S(16)),
+                Padding = new Padding(Theme.S(4)),
+                BackColor = Theme.Surface,
+            };
+            return menu;
+        }
+
+        public static ToolStripMenuItem Item(string text, string glyph, EventHandler click)
+        {
+            ToolStripMenuItem item = new ToolStripMenuItem(text, GlyphImage(glyph, Theme.TextSecondary), click)
+            {
+                Padding = new Padding(Theme.S(4), Theme.S(6), Theme.S(4), Theme.S(6)),
+                ForeColor = Theme.Text,
+            };
+            return item;
+        }
+
+        public static Bitmap GlyphImage(string glyph, Color color)
+        {
+            int size = Theme.S(16);
+            Bitmap image = new Bitmap(size, size);
+            if (string.IsNullOrEmpty(glyph) || !Theme.HasIconFont)
+            {
+                return image;
+            }
+            using (Graphics g = Graphics.FromImage(image))
+            using (Font font = new Font(Theme.IconFontName, size * 0.72f, GraphicsUnit.Pixel))
+            using (SolidBrush brush = new SolidBrush(color))
+            using (StringFormat format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+            {
+                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+                g.DrawString(glyph, font, brush, new RectangleF(0, 0, size, size), format);
+            }
+            return image;
+        }
+
+        protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
+        {
+            if (!e.Item.Selected || !e.Item.Enabled)
+            {
+                return;
+            }
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            RectangleF r = new RectangleF(Theme.S(2), 0.5f, e.Item.Width - Theme.S(4), e.Item.Height - 1);
+            using (GraphicsPath path = Theme.RoundedRect(r, Theme.S(6)))
+            using (SolidBrush brush = new SolidBrush(Theme.AccentSoft))
+            {
+                g.FillPath(brush, path);
+            }
+        }
+
+        protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+        {
+            e.TextColor = !e.Item.Enabled ? Theme.TextFaint : e.Item.Selected ? Theme.AccentText : e.Item.ForeColor;
+            base.OnRenderItemText(e);
+        }
+
+        protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
+        {
+            int y = e.Item.Height / 2;
+            using (Pen pen = new Pen(Theme.CardBorder))
+            {
+                e.Graphics.DrawLine(pen, Theme.S(8), y, e.Item.Width - Theme.S(8), y);
+            }
+        }
+
+        protected override void OnRenderImageMargin(ToolStripRenderEventArgs e)
+        {
+        }
+
+        private sealed class MenuColors : ProfessionalColorTable
+        {
+            public override Color ToolStripDropDownBackground => Theme.Surface;
+            public override Color MenuBorder => Theme.Border;
+            public override Color MenuItemBorder => Color.Transparent;
+            public override Color ImageMarginGradientBegin => Theme.Surface;
+            public override Color ImageMarginGradientMiddle => Theme.Surface;
+            public override Color ImageMarginGradientEnd => Theme.Surface;
+            public override Color SeparatorDark => Theme.CardBorder;
+            public override Color SeparatorLight => Theme.Surface;
         }
     }
 }

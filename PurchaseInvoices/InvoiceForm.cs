@@ -23,11 +23,109 @@ namespace PurchaseInvoices
         private int? editingTransId;
         private string editSnapshot = string.Empty;
 
+        private ContextMenuStrip accountMenu;
+        private ToolStripLabel mnuName;
+        private ToolStripLabel mnuRole;
+        private ToolStripMenuItem mnuUsers;
+        private ToolStripMenuItem mnuDatabase;
+        private ToolStripSeparator mnuAdminSeparator;
+        private ToolStripMenuItem mnuChangePassword;
+        private ToolStripMenuItem mnuSignOut;
+        private bool closeConfirmed;
+
         public InvoiceForm()
         {
             InitializeComponent();
-            Theme.StyleWindow(this);
+            Theme.StyleWindow(this, 1000, 660);
             cboCustomer.DropDownWidth = Theme.S(380);
+            BuildAccountMenu();
+            UpdateAccount();
+        }
+
+        internal bool SignOutRequested { get; private set; }
+
+        private void BuildAccountMenu()
+        {
+            accountMenu = ModernMenuRenderer.CreateMenu();
+            mnuName = new ToolStripLabel { Font = new Font("Segoe UI Semibold", 10f), ForeColor = Theme.Text, Padding = new Padding(Theme.S(2), Theme.S(6), Theme.S(2), 0) };
+            mnuRole = new ToolStripLabel { ForeColor = Theme.TextMuted, Padding = new Padding(Theme.S(2), 0, Theme.S(2), Theme.S(4)) };
+            mnuUsers = ModernMenuRenderer.Item("Users", "\uE716", (s, e) => OpenUsers());
+            mnuDatabase = ModernMenuRenderer.Item("Database", "\uE713", (s, e) => OpenDatabaseSettings());
+            mnuAdminSeparator = new ToolStripSeparator();
+            mnuChangePassword = ModernMenuRenderer.Item("Change password", "\uE8D7", (s, e) => ChangePassword());
+            mnuSignOut = ModernMenuRenderer.Item("Sign out", "\uE7E8", (s, e) => SignOut());
+            accountMenu.Items.AddRange(new ToolStripItem[]
+            {
+                mnuName, mnuRole, new ToolStripSeparator(),
+                mnuUsers, mnuDatabase, mnuAdminSeparator,
+                mnuChangePassword, new ToolStripSeparator(), mnuSignOut,
+            });
+            components.Add(accountMenu);
+        }
+
+        private void UpdateAccount()
+        {
+            AppUser user = Session.Current;
+            btnAccount.Initials = user?.Initials ?? "?";
+            toolTip.SetToolTip(btnAccount, user == null ? "Not signed in" : $"Signed in as {user.DisplayName} ({user.RoleName})");
+            mnuName.Text = user?.DisplayName ?? "Not signed in";
+            mnuRole.Text = user == null ? string.Empty : $"{user.RoleName}  Â·  {user.UserName}";
+            bool admin = Session.IsAdmin;
+            mnuUsers.Available = admin;
+            mnuDatabase.Available = admin;
+            mnuAdminSeparator.Available = admin;
+            mnuChangePassword.Available = user != null;
+        }
+
+        private void btnAccount_Click(object sender, EventArgs e)
+        {
+            accountMenu.Show(btnAccount, new Point(btnAccount.Width, btnAccount.Height + Theme.S(4)), ToolStripDropDownDirection.BelowLeft);
+        }
+
+        private void btnReports_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void OpenUsers()
+        {
+            if (!Session.IsAdmin)
+            {
+                return;
+            }
+            using (UsersForm users = new UsersForm(connectionString))
+            {
+                users.ShowDialog(this);
+                if (users.CurrentUserChanged)
+                {
+                    UpdateAccount();
+                }
+            }
+        }
+
+        private void ChangePassword()
+        {
+            if (Session.Current == null)
+            {
+                return;
+            }
+            using (ChangePasswordForm change = new ChangePasswordForm(connectionString, Session.Current, ChangePasswordMode.Own))
+            {
+                if (change.ShowDialog(this) == DialogResult.OK)
+                {
+                    MessageBox.Show(this, "Your password was changed.", "Change password", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        private void SignOut()
+        {
+            if (!ConfirmDiscardInvoice())
+            {
+                return;
+            }
+            SignOutRequested = true;
+            closeConfirmed = true;
+            Close();
         }
 
         private DateTime? InvoiceDate
@@ -183,6 +281,9 @@ namespace PurchaseInvoices
             btnCustomers.Enabled = ready;
             btnItems.Enabled = ready;
             btnAllInvoices.Enabled = ready;
+            btnReports.Enabled = ready;
+            mnuUsers.Enabled = ready;
+            mnuChangePassword.Enabled = ready;
         }
         private void btnAllInvoices_Click(object sender, EventArgs e)
         {
@@ -258,9 +359,9 @@ namespace PurchaseInvoices
                 cboItem.SelectedIndex = cboItem.FindStringExact(item);
             }
         }
-        private void btnDatabase_Click(object sender, EventArgs e)
+        private void OpenDatabaseSettings()
         {
-            if (!ConfirmDiscardInvoice())
+            if (!Session.IsAdmin || !ConfirmDiscardInvoice())
             {
                 return;
             }
@@ -441,7 +542,7 @@ namespace PurchaseInvoices
             btnSave.Enabled = !readOnly;
             btnAdd.Enabled = !readOnly;
             btnEditInvoice.Visible = readOnly;
-            btnDeleteInvoice.Visible = readOnly;
+            btnDeleteInvoice.Visible = readOnly && Session.IsAdmin;
             btnCancelEdit.Visible = !readOnly;
             btnEditInvoice.Enabled = readOnly && currentTransId != null;
             btnDeleteInvoice.Enabled = readOnly && currentTransId != null;
@@ -487,7 +588,7 @@ namespace PurchaseInvoices
         }
         private void btnDeleteInvoice_Click(object sender, EventArgs e)
         {
-            if (currentTransId == null || btnSave.Enabled)
+            if (currentTransId == null || btnSave.Enabled || !Session.IsAdmin)
             {
                 return;
             }
@@ -568,10 +669,12 @@ namespace PurchaseInvoices
         }
         private void InvoiceForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing && !ConfirmDiscardInvoice())
+            if (e.CloseReason == CloseReason.UserClosing && !closeConfirmed && !ConfirmDiscardInvoice())
             {
                 e.Cancel = true;
+                SignOutRequested = false;
             }
+            closeConfirmed = false;
         }
         private void LoadCustomers()
         {
