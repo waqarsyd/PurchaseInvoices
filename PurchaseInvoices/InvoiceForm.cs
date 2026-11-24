@@ -27,6 +27,7 @@ namespace PurchaseInvoices
         private ToolStripLabel mnuName;
         private ToolStripLabel mnuRole;
         private ToolStripMenuItem mnuUsers;
+        private ToolStripMenuItem mnuActivity;
         private ToolStripMenuItem mnuDatabase;
         private ToolStripSeparator mnuAdminSeparator;
         private ToolStripMenuItem mnuChangePassword;
@@ -50,6 +51,7 @@ namespace PurchaseInvoices
             mnuName = new ToolStripLabel { Font = new Font("Segoe UI Semibold", 10f), ForeColor = Theme.Text, Padding = new Padding(Theme.S(2), Theme.S(6), Theme.S(2), 0) };
             mnuRole = new ToolStripLabel { ForeColor = Theme.TextMuted, Padding = new Padding(Theme.S(2), 0, Theme.S(2), Theme.S(4)) };
             mnuUsers = ModernMenuRenderer.Item("Users", "\uE716", (s, e) => OpenUsers());
+            mnuActivity = ModernMenuRenderer.Item("Activity log", "\uE81C", (s, e) => OpenActivity());
             mnuDatabase = ModernMenuRenderer.Item("Database", "\uE713", (s, e) => OpenDatabaseSettings());
             mnuAdminSeparator = new ToolStripSeparator();
             mnuChangePassword = ModernMenuRenderer.Item("Change password", "\uE8D7", (s, e) => ChangePassword());
@@ -57,7 +59,7 @@ namespace PurchaseInvoices
             accountMenu.Items.AddRange(new ToolStripItem[]
             {
                 mnuName, mnuRole, new ToolStripSeparator(),
-                mnuUsers, mnuDatabase, mnuAdminSeparator,
+                mnuUsers, mnuActivity, mnuDatabase, mnuAdminSeparator,
                 mnuChangePassword, new ToolStripSeparator(), mnuSignOut,
             });
             components.Add(accountMenu);
@@ -72,6 +74,7 @@ namespace PurchaseInvoices
             mnuRole.Text = user == null ? string.Empty : $"{user.RoleName}  ·  {user.UserName}";
             bool admin = Session.IsAdmin;
             mnuUsers.Available = admin;
+            mnuActivity.Available = admin;
             mnuDatabase.Available = admin;
             mnuAdminSeparator.Available = admin;
             mnuChangePassword.Available = user != null;
@@ -99,6 +102,18 @@ namespace PurchaseInvoices
                 {
                     UpdateAccount();
                 }
+            }
+        }
+
+        private void OpenActivity()
+        {
+            if (!Session.IsAdmin)
+            {
+                return;
+            }
+            using (ActivityForm activity = new ActivityForm(connectionString))
+            {
+                activity.ShowDialog(this);
             }
         }
 
@@ -290,6 +305,7 @@ namespace PurchaseInvoices
             btnAllInvoices.Enabled = ready;
             btnReports.Enabled = ready;
             mnuUsers.Enabled = ready;
+            mnuActivity.Enabled = ready;
             mnuChangePassword.Enabled = ready;
         }
         private void btnAllInvoices_Click(object sender, EventArgs e)
@@ -434,6 +450,7 @@ namespace PurchaseInvoices
             editingTransId = null;
 
             txtInvoiceNo.Text = invoice.TransNo;
+            ShowAudit(invoice);
             cboCustomer.SelectedIndex = cboCustomer.FindStringExact(invoice.CustomerId);
             InvoiceTotal = AsText(invoice.Total);
 
@@ -476,6 +493,8 @@ namespace PurchaseInvoices
             InvoiceTotal = string.Empty;
             txtSearch.Text = string.Empty;
             dgvLines.Rows.Clear();
+            ShowAudit(null);
+            lblAudit.Text = "New invoice, not saved yet";
             SetReadOnlyMode(!true);
             editSnapshot = InvoiceSignature();
         }
@@ -511,7 +530,7 @@ namespace PurchaseInvoices
                 }
                 using (BusyIndicator.Start(this, updating ? $"Saving invoice {shownTransNo}…" : "Saving the new invoice…", $"{lines.Count} {(lines.Count == 1 ? "line" : "lines")}"))
                 {
-                    saved = db.SaveInvoice(editingTransId, cboCustomer.Text, Convert.ToDecimal(InvoiceTotal), lines);
+                    saved = db.SaveInvoice(editingTransId, cboCustomer.Text, Convert.ToDecimal(InvoiceTotal), lines, Session.UserName);
                 }
             }
             catch (Exception ex)
@@ -529,7 +548,9 @@ namespace PurchaseInvoices
             editingTransId = null;
             InvoiceDate = saved.Date;
             txtInvoiceNo.Text = saved.TransNo;
+            ShowAudit(saved);
             SetReadOnlyMode(true);
+            ActivityLog.Record(updating ? "Invoice changed" : "Invoice created", InvoiceSummary(saved.TransNo));
 
             string message = updating ? $"Invoice {saved.TransNo} updated successfully." : "Data inserted successfully!";
             if (!updating && saved.TransNo != shownTransNo)
@@ -615,6 +636,7 @@ namespace PurchaseInvoices
                 return;
             }
 
+            string deletedSummary = InvoiceSummary(transNo);
             bool deleted;
             try
             {
@@ -628,7 +650,11 @@ namespace PurchaseInvoices
                 MessageBox.Show($"Could not delete invoice {transNo}.\n\n{ex.Message}", "Delete invoice", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (!deleted)
+            if (deleted)
+            {
+                ActivityLog.Record("Invoice deleted", deletedSummary);
+            }
+            else
             {
                 MessageBox.Show($"Invoice {transNo} was already deleted by someone else.", "Delete invoice", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -643,8 +669,35 @@ namespace PurchaseInvoices
             currentIndex = Math.Min(currentIndex, transNumbers.Count - 1);
             LoadRecord(transNumbers[currentIndex]);
         }
+        private void ShowAudit(InvoiceStamp stamp)
+        {
+            List<string> parts = new List<string>();
+            if (stamp != null && (stamp.CreatedBy != null || stamp.CreatedAt.HasValue))
+            {
+                parts.Add("Created" + By(stamp.CreatedBy) + On(stamp.CreatedAt));
+            }
+            if (stamp != null && (stamp.ModifiedBy != null || stamp.ModifiedAt.HasValue))
+            {
+                parts.Add("Last changed" + By(stamp.ModifiedBy) + On(stamp.ModifiedAt));
+            }
+            lblAudit.Text = string.Join("   ·   ", parts);
+        }
+
+        private static string By(string user) => string.IsNullOrWhiteSpace(user) ? string.Empty : " by " + user;
+        private static string On(DateTime? when) => when.HasValue ? " on " + when.Value.ToString("dd MMM yyyy, HH:mm", CultureInfo.CurrentCulture) : string.Empty;
+
+        private string InvoiceSummary(string transNo)
+        {
+            int lines = dgvLines.Rows.Count;
+            decimal total;
+            string totalText = decimal.TryParse(InvoiceTotal, NumberStyles.Number, CultureInfo.CurrentCulture, out total) ? total.ToString("N2", CultureInfo.CurrentCulture) : InvoiceTotal;
+            string customer = cboCustomer.SelectedItem?.ToString() ?? string.Empty;
+            return $"Invoice {transNo} for {customer} {txtCustomerName.Text}".TrimEnd() + $", {lines} {(lines == 1 ? "line" : "lines")}, total {totalText}";
+        }
+
         private void ClearInvoice()
         {
+            ShowAudit(null);
             currentTransId = null;
             editingTransId = null;
             InvoiceDate = null;

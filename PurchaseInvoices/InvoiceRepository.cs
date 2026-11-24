@@ -30,21 +30,26 @@ namespace PurchaseInvoices
         public decimal? Amount { get; set; }
     }
 
-    internal sealed class InvoiceRecord
+    internal class InvoiceStamp
     {
         public int TransId { get; set; }
         public string TransNo { get; set; }
         public DateTime? Date { get; set; }
+        public string CreatedBy { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string ModifiedBy { get; set; }
+        public DateTime? ModifiedAt { get; set; }
+    }
+
+    internal sealed class InvoiceRecord : InvoiceStamp
+    {
         public string CustomerId { get; set; }
         public decimal? Total { get; set; }
         public List<InvoiceLine> Lines { get; } = new List<InvoiceLine>();
     }
 
-    internal sealed class SavedInvoice
+    internal sealed class SavedInvoice : InvoiceStamp
     {
-        public int TransId { get; set; }
-        public string TransNo { get; set; }
-        public DateTime? Date { get; set; }
     }
 
     internal sealed class InvoiceRepository
@@ -93,21 +98,18 @@ namespace PurchaseInvoices
             using (SqlConnection con = Open())
             {
                 InvoiceRecord invoice = null;
-                using (SqlCommand cmd = new SqlCommand("SELECT TOP (1) TRANS_ID, TRANS_NO, TRANS_DATE, CUST_ID, TOTAL_AMOUNT FROM PURCH_HEADER WHERE TRANS_NO = @TRANS_NO ORDER BY TRANS_ID", con))
+                using (SqlCommand cmd = new SqlCommand($"SELECT TOP (1) {StampColumns}, CUST_ID, TOTAL_AMOUNT FROM PURCH_HEADER WHERE TRANS_NO = @TRANS_NO ORDER BY TRANS_ID", con))
                 {
                     cmd.Parameters.AddWithValue("@TRANS_NO", transNo);
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            invoice = new InvoiceRecord
+                            invoice = ReadStamp(reader, new InvoiceRecord
                             {
-                                TransId = Convert.ToInt32(reader["TRANS_ID"]),
-                                TransNo = reader["TRANS_NO"].ToString(),
-                                Date = reader["TRANS_DATE"] as DateTime?,
                                 CustomerId = Convert.ToString(reader["CUST_ID"]),
                                 Total = reader["TOTAL_AMOUNT"] as decimal?,
-                            };
+                            });
                         }
                     }
                 }
@@ -142,14 +144,14 @@ namespace PurchaseInvoices
             }
         }
 
-        public SavedInvoice SaveInvoice(int? transId, string customerId, decimal total, IList<InvoiceLine> lines)
+        public SavedInvoice SaveInvoice(int? transId, string customerId, decimal total, IList<InvoiceLine> lines, string userName)
         {
             string headerSql = transId.HasValue
-                ? "UPDATE PURCH_HEADER SET CUST_ID = @CUST_ID, TOTAL_AMOUNT = @TOTAL_AMOUNT WHERE TRANS_ID = @TRANS_ID; " +
-                  "SELECT TRANS_ID, TRANS_NO, TRANS_DATE FROM PURCH_HEADER WHERE TRANS_ID = @TRANS_ID;"
-                : "INSERT INTO PURCH_HEADER (TRANS_DATE, TRANS_NO, CUST_ID, TOTAL_AMOUNT) " +
-                  "SELECT GETDATE(), ISNULL(MAX(TRANS_NO), 0) + 1, @CUST_ID, @TOTAL_AMOUNT FROM PURCH_HEADER WITH (UPDLOCK, HOLDLOCK); " +
-                  "SELECT TRANS_ID, TRANS_NO, TRANS_DATE FROM PURCH_HEADER WHERE TRANS_ID = SCOPE_IDENTITY();";
+                ? "UPDATE PURCH_HEADER SET CUST_ID = @CUST_ID, TOTAL_AMOUNT = @TOTAL_AMOUNT, MODIFIED_BY = @USER, MODIFIED_AT = GETDATE() WHERE TRANS_ID = @TRANS_ID; " +
+                  $"SELECT {StampColumns} FROM PURCH_HEADER WHERE TRANS_ID = @TRANS_ID;"
+                : "INSERT INTO PURCH_HEADER (TRANS_DATE, TRANS_NO, CUST_ID, TOTAL_AMOUNT, CREATED_BY, CREATED_AT) " +
+                  "SELECT GETDATE(), ISNULL(MAX(TRANS_NO), 0) + 1, @CUST_ID, @TOTAL_AMOUNT, @USER, GETDATE() FROM PURCH_HEADER WITH (UPDLOCK, HOLDLOCK); " +
+                  $"SELECT {StampColumns} FROM PURCH_HEADER WHERE TRANS_ID = SCOPE_IDENTITY();";
 
             using (SqlConnection con = Open())
             using (SqlTransaction transaction = con.BeginTransaction())
@@ -159,6 +161,7 @@ namespace PurchaseInvoices
                 {
                     cmd.Parameters.AddWithValue("@CUST_ID", Value(customerId));
                     cmd.Parameters.AddWithValue("@TOTAL_AMOUNT", total);
+                    cmd.Parameters.AddWithValue("@USER", Value(userName));
                     if (transId.HasValue)
                     {
                         cmd.Parameters.AddWithValue("@TRANS_ID", transId.Value);
@@ -167,12 +170,7 @@ namespace PurchaseInvoices
                     {
                         if (reader.Read())
                         {
-                            saved = new SavedInvoice
-                            {
-                                TransId = Convert.ToInt32(reader["TRANS_ID"]),
-                                TransNo = reader["TRANS_NO"].ToString(),
-                                Date = reader["TRANS_DATE"] as DateTime?,
-                            };
+                            saved = ReadStamp(reader, new SavedInvoice());
                         }
                     }
                 }
@@ -225,7 +223,7 @@ namespace PurchaseInvoices
 
         public DataTable GetInvoiceList()
         {
-            string sql = "SELECT h.TRANS_ID, h.TRANS_NO, h.TRANS_DATE, h.CUST_ID, c.CUST_NAME, h.TOTAL_AMOUNT, " +
+            string sql = "SELECT h.TRANS_ID, h.TRANS_NO, h.TRANS_DATE, h.CUST_ID, c.CUST_NAME, h.TOTAL_AMOUNT, h.CREATED_BY, " +
                          "(SELECT COUNT(*) FROM PURCH_DETAIL d WHERE d.TRANS_ID = h.TRANS_ID) AS LINES " +
                          "FROM PURCH_HEADER h LEFT JOIN CUSTOMER_MASTER c ON c.CUSTID = h.CUST_ID " +
                          "ORDER BY h.TRANS_ID DESC";
@@ -315,6 +313,20 @@ namespace PurchaseInvoices
                 cmd.Parameters.AddWithValue("@TRANS_ID", transId);
                 return cmd.ExecuteNonQuery();
             }
+        }
+
+        private const string StampColumns = "TRANS_ID, TRANS_NO, TRANS_DATE, CREATED_BY, CREATED_AT, MODIFIED_BY, MODIFIED_AT";
+
+        private static T ReadStamp<T>(SqlDataReader reader, T stamp) where T : InvoiceStamp
+        {
+            stamp.TransId = Convert.ToInt32(reader["TRANS_ID"]);
+            stamp.TransNo = reader["TRANS_NO"].ToString();
+            stamp.Date = reader["TRANS_DATE"] as DateTime?;
+            stamp.CreatedBy = reader["CREATED_BY"] as string;
+            stamp.CreatedAt = reader["CREATED_AT"] as DateTime?;
+            stamp.ModifiedBy = reader["MODIFIED_BY"] as string;
+            stamp.ModifiedAt = reader["MODIFIED_AT"] as DateTime?;
+            return stamp;
         }
 
         private static object Value(object value) => value ?? DBNull.Value;

@@ -526,6 +526,7 @@ namespace PurchaseInvoices
                 btnDelete.Enabled = true;
             }
             SetStatus(creating ? $"Added {definition.Singular} {key}." : $"Saved changes to {key}.");
+            ActivityLog.Record(definition.SingularTitle + (creating ? " added" : " changed"), $"{key} {name}".Trim());
         }
 
         private void Delete()
@@ -587,6 +588,7 @@ namespace PurchaseInvoices
                 StartNew(false);
             }
             SetStatus($"Deleted {definition.Singular} {key}.");
+            ActivityLog.Record(definition.SingularTitle + " deleted", key);
         }
 
         private object Scalar(string sql, string key)

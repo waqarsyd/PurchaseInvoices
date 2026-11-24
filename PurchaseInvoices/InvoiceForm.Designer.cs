@@ -59,6 +59,7 @@ namespace PurchaseInvoices
             this.contentPanel = new System.Windows.Forms.Panel();
             this.gridCard = new PurchaseInvoices.CardPanel();
             this.dgvLines = new PurchaseInvoices.ModernGrid();
+            this.lblAudit = new System.Windows.Forms.Label();
             this.Slno = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ItemCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -438,6 +439,7 @@ namespace PurchaseInvoices
             // 
             this.gridCard.BackColor = System.Drawing.Color.White;
             this.gridCard.Controls.Add(this.dgvLines);
+            this.gridCard.Controls.Add(this.lblAudit);
             this.gridCard.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gridCard.Glyph = "";
             this.gridCard.Location = new System.Drawing.Point(14, 294);
@@ -445,6 +447,19 @@ namespace PurchaseInvoices
             this.gridCard.Size = new System.Drawing.Size(1092, 274);
             this.gridCard.TabIndex = 2;
             this.gridCard.Title = "Line items";
+            // 
+            // lblAudit
+            // 
+            this.lblAudit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblAudit.AutoEllipsis = true;
+            this.lblAudit.BackColor = System.Drawing.Color.White;
+            this.lblAudit.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblAudit.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
+            this.lblAudit.Location = new System.Drawing.Point(352, 16);
+            this.lblAudit.Name = "lblAudit";
+            this.lblAudit.Size = new System.Drawing.Size(720, 20);
+            this.lblAudit.TabIndex = 1;
+            this.lblAudit.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // dgvLines
             // 
@@ -955,6 +970,7 @@ namespace PurchaseInvoices
         private PurchaseInvoices.FooterPanel footerPanel;
         private PurchaseInvoices.ModernButton btnReports;
         private PurchaseInvoices.AccountButton btnAccount;
+        private System.Windows.Forms.Label lblAudit;
         private PurchaseInvoices.ModernButton btnCustomers;
         private PurchaseInvoices.ModernButton btnItems;
         private PurchaseInvoices.ModernButton btnPrint;

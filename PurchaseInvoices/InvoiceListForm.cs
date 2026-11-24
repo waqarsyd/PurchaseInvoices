@@ -8,7 +8,7 @@ namespace PurchaseInvoices
 {
     internal partial class InvoiceListForm : Form
     {
-        private static readonly string[] Periods =
+        internal static readonly string[] Periods =
         {
             "All time", "Today", "Last 7 days", "Last 30 days", "This month", "Last month", "This year", "Last year"
         };
@@ -28,12 +28,13 @@ namespace PurchaseInvoices
             comboPeriod.Items.AddRange(Periods);
             comboPeriod.SelectedIndex = 0;
             grid.AutoGenerateColumns = false;
-            AddColumn("TRANS_NO", "Invoice no.", 13, DataGridViewContentAlignment.NotSet, null, false);
-            AddColumn("TRANS_DATE", "Date", 16, DataGridViewContentAlignment.NotSet, "dd MMM yyyy", false);
-            AddColumn("CUST_ID", "Customer ID", 14, DataGridViewContentAlignment.NotSet, null, false);
-            AddColumn("CUST_NAME", "Customer", 31, DataGridViewContentAlignment.NotSet, null, false);
-            AddColumn("LINES", "Lines", 9, DataGridViewContentAlignment.MiddleRight, null, false);
-            AddColumn("TOTAL_AMOUNT", "Total", 17, DataGridViewContentAlignment.MiddleRight, "N2", true);
+            AddColumn("TRANS_NO", "Invoice no.", 11, DataGridViewContentAlignment.NotSet, null, false);
+            AddColumn("TRANS_DATE", "Date", 14, DataGridViewContentAlignment.NotSet, "dd MMM yyyy", false);
+            AddColumn("CUST_ID", "Customer ID", 12, DataGridViewContentAlignment.NotSet, null, false);
+            AddColumn("CUST_NAME", "Customer", 28, DataGridViewContentAlignment.NotSet, null, false);
+            AddColumn("LINES", "Lines", 8, DataGridViewContentAlignment.MiddleRight, null, false);
+            AddColumn("CREATED_BY", "Created by", 12, DataGridViewContentAlignment.NotSet, null, false);
+            AddColumn("TOTAL_AMOUNT", "Total", 15, DataGridViewContentAlignment.MiddleRight, "N2", true);
         }
 
         public string SelectedTransNo { get; private set; }
@@ -117,7 +118,7 @@ namespace PurchaseInvoices
             if (text.Length > 0)
             {
                 string like = MasterForm.EscapeLike(text);
-                parts.Add($"(CONVERT(TRANS_NO, 'System.String') LIKE '%{like}%' OR CUST_ID LIKE '%{like}%' OR CUST_NAME LIKE '%{like}%')");
+                parts.Add($"(CONVERT(TRANS_NO, 'System.String') LIKE '%{like}%' OR CUST_ID LIKE '%{like}%' OR CUST_NAME LIKE '%{like}%' OR CREATED_BY LIKE '%{like}%')");
             }
             if (comboCustomer.SelectedIndex >= 0)
             {
