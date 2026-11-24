@@ -67,6 +67,7 @@ namespace PurchaseInvoices
             this.lblSetupError = new System.Windows.Forms.Label();
             this.btnCreateAccount = new PurchaseInvoices.ModernButton();
             this.pageMessage = new System.Windows.Forms.Panel();
+            this.spinner = new PurchaseInvoices.Spinner();
             this.lblMessageTitle = new System.Windows.Forms.Label();
             this.lblMessage = new System.Windows.Forms.Label();
             this.btnMessagePrimary = new PurchaseInvoices.ModernButton();
@@ -250,6 +251,7 @@ namespace PurchaseInvoices
             this.btnSignIn.Size = new System.Drawing.Size(400, 44);
             this.btnSignIn.TabIndex = 4;
             this.btnSignIn.Text = "Sign in";
+            this.btnSignIn.BusyText = "Signing in…";
             this.btnSignIn.Click += new System.EventHandler(this.btnSignIn_Click);
             //
             // lblConnection
@@ -500,10 +502,12 @@ namespace PurchaseInvoices
             this.btnCreateAccount.Size = new System.Drawing.Size(400, 44);
             this.btnCreateAccount.TabIndex = 5;
             this.btnCreateAccount.Text = "Create account and sign in";
+            this.btnCreateAccount.BusyText = "Creating your account…";
             this.btnCreateAccount.Click += new System.EventHandler(this.btnCreateAccount_Click);
             //
             // pageMessage
             //
+            this.pageMessage.Controls.Add(this.spinner);
             this.pageMessage.Controls.Add(this.lblMessageTitle);
             this.pageMessage.Controls.Add(this.lblMessage);
             this.pageMessage.Controls.Add(this.btnMessagePrimary);
@@ -513,6 +517,14 @@ namespace PurchaseInvoices
             this.pageMessage.Name = "pageMessage";
             this.pageMessage.Size = new System.Drawing.Size(520, 580);
             this.pageMessage.TabIndex = 2;
+            //
+            // spinner
+            //
+            this.spinner.Location = new System.Drawing.Point(60, 46);
+            this.spinner.Name = "spinner";
+            this.spinner.Size = new System.Drawing.Size(40, 40);
+            this.spinner.TabIndex = 32;
+            this.spinner.Visible = false;
             //
             // lblMessageTitle
             //
@@ -634,6 +646,7 @@ namespace PurchaseInvoices
         private System.Windows.Forms.Label lblSetupError;
         private PurchaseInvoices.ModernButton btnCreateAccount;
         private System.Windows.Forms.Panel pageMessage;
+        private PurchaseInvoices.Spinner spinner;
         private System.Windows.Forms.Label lblMessageTitle;
         private System.Windows.Forms.Label lblMessage;
         private PurchaseInvoices.ModernButton btnMessagePrimary;

@@ -7,6 +7,7 @@ namespace PurchaseInvoices
     internal partial class PrintPreviewForm : Form
     {
         private readonly InvoicePrintDocument document;
+        private BusyIndicator loading;
 
         public PrintPreviewForm(InvoicePrintDocument document)
         {
@@ -14,7 +15,11 @@ namespace PurchaseInvoices
             Theme.StyleWindow(this, 640, 520);
             this.document = document;
             document.EndPrint += Document_EndPrint;
-            FormClosed += (s, e) => document.EndPrint -= Document_EndPrint;
+            FormClosed += (s, e) =>
+            {
+                document.EndPrint -= Document_EndPrint;
+                StopLoading();
+            };
             headerPanel.Subtitle = document.DocumentName;
             preview.Document = document;
             UpdatePager();
@@ -22,8 +27,20 @@ namespace PurchaseInvoices
 
         public bool Printed { get; private set; }
 
+        internal BusyIndicator Loading
+        {
+            set { loading = value; }
+        }
+
+        private void StopLoading()
+        {
+            loading?.Dispose();
+            loading = null;
+        }
+
         private void Document_EndPrint(object sender, PrintEventArgs e)
         {
+            StopLoading();
             if (IsHandleCreated && !IsDisposed)
             {
                 BeginInvoke((MethodInvoker)UpdatePager);
@@ -87,7 +104,11 @@ namespace PurchaseInvoices
             }
             try
             {
-                document.Print();
+                using (BusyIndicator.Start(this, "Sending to the printer…", $"{document.DocumentName}  ·  {document.TotalPages} {(document.TotalPages == 1 ? "page" : "pages")}"))
+                {
+                    document.PrintController = new StandardPrintController();
+                    document.Print();
+                }
             }
             catch (Exception ex)
             {

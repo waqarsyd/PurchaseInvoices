@@ -251,6 +251,10 @@ namespace PurchaseInvoices
         private bool glyphAfterText;
         private bool hovering;
         private bool pressing;
+        private bool busy;
+        private string busyText = string.Empty;
+        private float busyAngle;
+        private Timer busyTimer;
 
         public ModernButton()
         {
@@ -280,6 +284,75 @@ namespace PurchaseInvoices
         {
             get { return glyphAfterText; }
             set { glyphAfterText = value; Invalidate(); }
+        }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool Busy
+        {
+            get { return busy; }
+            set
+            {
+                if (busy == value)
+                {
+                    return;
+                }
+                busy = value;
+                if (busy)
+                {
+                    if (busyTimer == null)
+                    {
+                        busyTimer = new Timer { Interval = 16 };
+                        busyTimer.Tick += (s, e) =>
+                        {
+                            busyAngle = (busyAngle + SpinnerArt.DegreesPerTick) % 360f;
+                            Invalidate();
+                        };
+                    }
+                    busyTimer.Start();
+                }
+                else
+                {
+                    busyTimer?.Stop();
+                }
+                Invalidate();
+            }
+        }
+
+        [DefaultValue("")]
+        public string BusyText
+        {
+            get { return busyText; }
+            set { busyText = value ?? string.Empty; Invalidate(); }
+        }
+
+        protected override void OnClick(EventArgs e)
+        {
+            if (!busy)
+            {
+                base.OnClick(e);
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                busyTimer?.Dispose();
+                busyTimer = null;
+            }
+            base.Dispose(disposing);
+        }
+
+        private void DrawBusy(Graphics g, Color color)
+        {
+            const TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.VerticalCenter | TextFormatFlags.Left;
+            string text = busyText.Length > 0 ? busyText : Text;
+            Size textSize = TextRenderer.MeasureText(g, text, Font, Size.Empty, flags);
+            int size = Theme.S(16);
+            int gap = text.Length > 0 ? Theme.S(10) : 0;
+            int x = (Width - (size + gap + textSize.Width)) / 2;
+            SpinnerArt.Draw(g, new RectangleF(x, (Height - size) / 2f, size, size), busyAngle, Theme.S(2), Color.FromArgb(60, color), color, color);
+            TextRenderer.DrawText(g, text, Font, new Rectangle(x + size + gap, 0, textSize.Width + 2, Height), color, flags);
         }
 
         protected override void OnMouseEnter(EventArgs e)
@@ -419,6 +492,11 @@ namespace PurchaseInvoices
 
         protected virtual void DrawContent(Graphics g, Color color)
         {
+            if (busy)
+            {
+                DrawBusy(g, color);
+                return;
+            }
             const TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.VerticalCenter | TextFormatFlags.Left;
             Size textSize = TextRenderer.MeasureText(g, Text, Font, Size.Empty, flags);
             Font icon = string.IsNullOrEmpty(glyph) ? null : Theme.IconFont(Font.SizeInPoints);

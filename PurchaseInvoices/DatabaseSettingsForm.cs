@@ -20,6 +20,9 @@ namespace PurchaseInvoices
         {
             InitializeComponent();
             Theme.StyleWindow(this, 560, 540);
+            btnTest.BusyText = "Testing…";
+            btnCreateTables.BusyText = "Creating…";
+            btnSave.BusyText = "Checking…";
             cboAuth.Items.AddRange(new object[] { "Windows authentication", "SQL Server login" });
             LoadDetails(AppConnection.Current);
         }
@@ -122,17 +125,20 @@ namespace PurchaseInvoices
             return null;
         }
 
-        private void SetBusy(bool value)
+        private void SetBusy(bool value, ModernButton active = null)
         {
             busy = value;
-            UseWaitCursor = value;
-            btnTest.Enabled = !value;
-            btnSave.Enabled = !value;
-            btnCreateTables.Enabled = !value;
+            foreach (ModernButton button in new[] { btnTest, btnSave, btnCreateTables })
+            {
+                button.Busy = value && button == active;
+                button.Enabled = !value || button == active;
+            }
             btnUseDefault.Enabled = !value && AppConnection.Source == ConnectionSource.UserSettings && AppConnection.AppConfigConnectionString != null;
         }
 
-        internal async Task<DatabaseStatus> TestAsync()
+        internal Task<DatabaseStatus> TestAsync() => RunTestAsync(btnTest);
+
+        private async Task<DatabaseStatus> RunTestAsync(ModernButton active)
         {
             ConnectionDetails details = ReadDetails();
             string error = Validate(details);
@@ -143,7 +149,7 @@ namespace PurchaseInvoices
                 return null;
             }
             string connectionString = details.ToConnectionString(5);
-            SetBusy(true);
+            SetBusy(true, active);
             SetStatus(Theme.TextMuted, "Connecting…");
             try
             {
@@ -198,7 +204,7 @@ namespace PurchaseInvoices
 
         internal async Task CreateTablesAsync()
         {
-            DatabaseStatus status = await TestAsync();
+            DatabaseStatus status = await RunTestAsync(btnCreateTables);
             if (status == null || status.IsReady || status.Problems.Count > 0)
             {
                 return;
@@ -213,7 +219,7 @@ namespace PurchaseInvoices
 
             string connectionString = lastTestedConnection;
             bool databaseCreated = false;
-            SetBusy(true);
+            SetBusy(true, btnCreateTables);
             SetStatus(Theme.TextMuted, "Creating…");
             try
             {
@@ -236,7 +242,7 @@ namespace PurchaseInvoices
             }
             SetBusy(false);
             NeedsReload = true;
-            await TestAsync();
+            await RunTestAsync(btnCreateTables);
         }
 
         private async void btnCreateTables_Click(object sender, EventArgs e)
@@ -255,7 +261,7 @@ namespace PurchaseInvoices
             }
             if (lastStatus == null || lastTestedConnection != details.ToConnectionString())
             {
-                await TestAsync();
+                await RunTestAsync(btnSave);
             }
             if (lastStatus == null && MessageBox.Show(this, "The app could not connect with these settings. Save them anyway?", "Database connection",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)

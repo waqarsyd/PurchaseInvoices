@@ -105,6 +105,9 @@
     <Compile Include="MasterForm.Designer.cs">
       <DependentUpon>MasterForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Loading.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ModernUI.cs">
       <SubType>Component</SubType>
     </Compile>

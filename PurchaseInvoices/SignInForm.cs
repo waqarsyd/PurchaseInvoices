@@ -183,7 +183,7 @@ namespace PurchaseInvoices
 
             AccountRepository accounts = new AccountRepository(connectionString);
             SignInResult result;
-            SetBusy(true);
+            SetBusy(true, btnSignIn);
             lblSignInError.Text = string.Empty;
             try
             {
@@ -259,7 +259,7 @@ namespace PurchaseInvoices
             AccountRepository accounts = new AccountRepository(connectionString);
             string password = txtNewPassword.Text;
             AppUser user;
-            SetBusy(true);
+            SetBusy(true, btnCreateAccount);
             lblSetupError.Text = string.Empty;
             try
             {
@@ -321,15 +321,15 @@ namespace PurchaseInvoices
             AcceptButton = accept;
         }
 
-        private void SetBusy(bool value)
+        private void SetBusy(bool value, ModernButton active = null)
         {
             busy = value;
-            UseWaitCursor = value;
-            btnSignIn.Enabled = !value;
-            btnCreateAccount.Enabled = !value;
-            btnMessagePrimary.Enabled = !value;
-            btnMessageSecondary.Enabled = !value;
-            btnDatabaseSettings.Enabled = !value;
+            foreach (ModernButton button in new[] { btnSignIn, btnCreateAccount, btnMessagePrimary, btnMessageSecondary, btnDatabaseSettings })
+            {
+                button.Busy = value && button == active;
+                button.Enabled = !value || button == active;
+            }
+            spinner.Visible = value && active == null;
         }
 
         private void UpdateConnectionLabel()

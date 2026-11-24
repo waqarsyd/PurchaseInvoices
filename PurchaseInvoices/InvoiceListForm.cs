@@ -67,9 +67,15 @@ namespace PurchaseInvoices
             try
             {
                 InvoiceRepository db = new InvoiceRepository(connectionString);
-                DataTable data = db.GetInvoiceList();
+                DataTable data;
+                List<CustomerRecord> customerList;
+                using (BusyIndicator.Start(this, "Loading invoices…"))
+                {
+                    data = db.GetInvoiceList();
+                    customerList = db.GetCustomers();
+                }
                 Dictionary<string, string> customers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (CustomerRecord customer in db.GetCustomers())
+                foreach (CustomerRecord customer in customerList)
                 {
                     customers[customer.Id] = customer.Name;
                     comboCustomer.Items.Add(customer.Id);

@@ -69,7 +69,7 @@ namespace PurchaseInvoices
             btnAccount.Initials = user?.Initials ?? "?";
             toolTip.SetToolTip(btnAccount, user == null ? "Not signed in" : $"Signed in as {user.DisplayName} ({user.RoleName})");
             mnuName.Text = user?.DisplayName ?? "Not signed in";
-            mnuRole.Text = user == null ? string.Empty : $"{user.RoleName}  Â·  {user.UserName}";
+            mnuRole.Text = user == null ? string.Empty : $"{user.RoleName}  ·  {user.UserName}";
             bool admin = Session.IsAdmin;
             mnuUsers.Available = admin;
             mnuDatabase.Available = admin;
@@ -241,7 +241,11 @@ namespace PurchaseInvoices
             DatabaseStatus status;
             try
             {
-                status = DatabaseSetup.GetStatus(connectionString);
+                ConnectionDetails target = AppConnection.Current;
+                using (BusyIndicator.Start(this, "Connecting to the database…", $"{target.Database} on {target.Server}"))
+                {
+                    status = DatabaseSetup.GetStatus(connectionString);
+                }
             }
             catch (Exception ex)
             {
@@ -258,17 +262,20 @@ namespace PurchaseInvoices
                 return;
             }
 
-            cboCustomer.Items.Clear();
-            cboItem.Items.Clear();
-            LoadCustomers(); // whene ever we have to called any method we can called it over here in from load form
-            LoadItems();
-            SetDatabaseReady(true);
-            currentIndex = 0;
-            transNumbers = GetTransNumbers();
-            if (transNumbers != null && transNumbers.Count > 0)
+            using (BusyIndicator.Start(this, "Loading your invoices…"))
             {
-                transNumbers.Reverse();
-                LoadRecord(transNumbers[currentIndex]);
+                cboCustomer.Items.Clear();
+                cboItem.Items.Clear();
+                LoadCustomers(); // whene ever we have to called any method we can called it over here in from load form
+                LoadItems();
+                SetDatabaseReady(true);
+                currentIndex = 0;
+                transNumbers = GetTransNumbers();
+                if (transNumbers != null && transNumbers.Count > 0)
+                {
+                    transNumbers.Reverse();
+                    LoadRecord(transNumbers[currentIndex]);
+                }
             }
             SetReadOnlyMode(true);
         }
@@ -403,7 +410,10 @@ namespace PurchaseInvoices
             InvoiceRecord invoice;
             try
             {
-                invoice = db.FindInvoice(transNumber);
+                using (BusyIndicator.Start(this, $"Opening invoice {transNumber}…"))
+                {
+                    invoice = db.FindInvoice(transNumber);
+                }
             }
             catch (Exception ex)
             {
@@ -499,7 +509,10 @@ namespace PurchaseInvoices
                         Amount = Convert.ToDecimal(dgvLines.Rows[i].Cells[5].Value.ToString()),
                     });
                 }
-                saved = db.SaveInvoice(editingTransId, cboCustomer.Text, Convert.ToDecimal(InvoiceTotal), lines);
+                using (BusyIndicator.Start(this, updating ? $"Saving invoice {shownTransNo}…" : "Saving the new invoice…", $"{lines.Count} {(lines.Count == 1 ? "line" : "lines")}"))
+                {
+                    saved = db.SaveInvoice(editingTransId, cboCustomer.Text, Convert.ToDecimal(InvoiceTotal), lines);
+                }
             }
             catch (Exception ex)
             {
@@ -605,7 +618,10 @@ namespace PurchaseInvoices
             bool deleted;
             try
             {
-                deleted = db.DeleteInvoice(currentTransId.Value);
+                using (BusyIndicator.Start(this, $"Deleting invoice {transNo}…"))
+                {
+                    deleted = db.DeleteInvoice(currentTransId.Value);
+                }
             }
             catch (Exception ex)
             {
@@ -978,10 +994,19 @@ namespace PurchaseInvoices
                 MessageBox.Show("No printer is installed on this PC. Install a printer, or \"Microsoft Print to PDF\", to preview and print invoices.", "Print", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            using (InvoicePrintDocument document = new InvoicePrintDocument(BuildPrintData()))
-            using (PrintPreviewForm preview = new PrintPreviewForm(document))
+            string which = txtInvoiceNo.Text.Length > 0 ? $"Invoice {txtInvoiceNo.Text}" : "Draft invoice";
+            BusyIndicator loading = BusyIndicator.Start(this, "Preparing print preview…", $"{which}  ·  {dgvLines.Rows.Count} {(dgvLines.Rows.Count == 1 ? "line" : "lines")}");
+            try
             {
-                preview.ShowDialog(this);
+                using (InvoicePrintDocument document = new InvoicePrintDocument(BuildPrintData()))
+                using (PrintPreviewForm preview = new PrintPreviewForm(document) { Loading = loading })
+                {
+                    preview.ShowDialog(this);
+                }
+            }
+            finally
+            {
+                loading.Dispose();
             }
         }
         private InvoicePrintData BuildPrintData()

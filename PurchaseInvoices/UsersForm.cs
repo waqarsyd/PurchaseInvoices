@@ -32,6 +32,7 @@ namespace PurchaseInvoices
                 { "Staff", "Invoices, customers, items and reports" },
             };
             cboRole.DropDownWidth = Theme.S(420);
+            btnSave.BusyText = "Saving…";
             grid.AutoGenerateColumns = false;
             AddColumn("UserName", "User name", 22);
             AddColumn("FullName", "Full name", 30);
@@ -58,7 +59,10 @@ namespace PurchaseInvoices
         {
             try
             {
-                users = accounts.GetUsers();
+                using (BusyIndicator.Start(this, "Loading users…"))
+                {
+                    users = accounts.GetUsers();
+                }
             }
             catch (SqlException ex)
             {
@@ -163,7 +167,8 @@ namespace PurchaseInvoices
 
         private void UpdateButtons()
         {
-            btnSave.Enabled = dirty && !busy;
+            btnSave.Enabled = dirty || busy;
+            btnSave.Busy = busy;
             btnResetPassword.Enabled = !busy && editing != null && !EditingSelf;
             btnNewUser.Enabled = !busy;
         }
@@ -352,7 +357,6 @@ namespace PurchaseInvoices
         private void SetBusy(bool value)
         {
             busy = value;
-            UseWaitCursor = value;
             UpdateButtons();
         }
 

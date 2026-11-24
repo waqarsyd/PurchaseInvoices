@@ -186,6 +186,7 @@ namespace PurchaseInvoices
             DataTable data = new DataTable();
             try
             {
+                using (BusyIndicator.Start(this, $"Loading {definition.Plural}…"))
                 using (SqlConnection con = new SqlConnection(connectionString))
                 using (SqlDataAdapter adapter = new SqlDataAdapter($"SELECT {columns} FROM {definition.Table} ORDER BY {Col(0)}", con))
                 {

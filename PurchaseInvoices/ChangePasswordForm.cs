@@ -63,6 +63,7 @@ namespace PurchaseInvoices
                 lblError.Top = chkMustChange.Bottom + (lblRule.Top - hostConfirm.Bottom);
             }
             ActiveControl = mode == ChangePasswordMode.Own ? txtCurrent : txtNew;
+            btnSave.BusyText = "Saving…";
         }
 
         internal async Task<bool> SaveAsync()
@@ -126,8 +127,7 @@ namespace PurchaseInvoices
         private void SetBusy(bool value)
         {
             busy = value;
-            UseWaitCursor = value;
-            btnSave.Enabled = !value;
+            btnSave.Busy = value;
             btnCancel.Enabled = !value;
         }
 
