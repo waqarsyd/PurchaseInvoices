@@ -33,6 +33,7 @@ namespace PurchaseInvoices
         private ToolStripMenuItem mnuDatabase;
         private ToolStripSeparator mnuAdminSeparator;
         private ToolStripMenuItem mnuChangePassword;
+        private ToolStripMenuItem mnuAbout;
         private ToolStripMenuItem mnuSignOut;
         private bool closeConfirmed;
         private CompanyProfile company = new CompanyProfile();
@@ -60,12 +61,13 @@ namespace PurchaseInvoices
             mnuDatabase = ModernMenuRenderer.Item("Database", "\uE713", (s, e) => OpenDatabaseSettings());
             mnuAdminSeparator = new ToolStripSeparator();
             mnuChangePassword = ModernMenuRenderer.Item("Change password", "\uE8D7", (s, e) => ChangePassword());
+            mnuAbout = ModernMenuRenderer.Item("About Purchase Invoices", "\uE946", (s, e) => OpenAbout());
             mnuSignOut = ModernMenuRenderer.Item("Sign out", "\uE7E8", (s, e) => SignOut());
             accountMenu.Items.AddRange(new ToolStripItem[]
             {
                 mnuName, mnuRole, new ToolStripSeparator(),
                 mnuCompany, mnuUsers, mnuActivity, mnuBackup, mnuDatabase, mnuAdminSeparator,
-                mnuChangePassword, new ToolStripSeparator(), mnuSignOut,
+                mnuChangePassword, mnuAbout, new ToolStripSeparator(), mnuSignOut,
             });
             components.Add(accountMenu);
         }
@@ -176,6 +178,14 @@ namespace PurchaseInvoices
             }
         }
 
+        private void OpenAbout()
+        {
+            using (AboutForm about = new AboutForm(company))
+            {
+                about.ShowDialog(this);
+            }
+        }
+
         private void ChangePassword()
         {
             if (Session.Current == null)
@@ -264,6 +274,9 @@ namespace PurchaseInvoices
                     return true;
                 case Keys.Control | Keys.R:
                     btnReports.PerformClick();
+                    return true;
+                case Keys.F1:
+                    OpenAbout();
                     return true;
                 case Keys.Alt | Keys.Left:
                     btnPrevious.PerformClick();

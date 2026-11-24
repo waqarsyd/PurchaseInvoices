@@ -1685,4 +1685,82 @@ namespace PurchaseInvoices
             }
         }
     }
+
+    public class InfoList : Control
+    {
+        private readonly List<KeyValuePair<string, string>> rows = new List<KeyValuePair<string, string>>();
+        private bool keycaps;
+        private int columns = 1;
+
+        public InfoList()
+        {
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+            SetStyle(ControlStyles.Selectable, false);
+            TabStop = false;
+            BackColor = Theme.Surface;
+        }
+
+        [DefaultValue(false)]
+        public bool Keycaps { get { return keycaps; } set { keycaps = value; Invalidate(); } }
+
+        [DefaultValue(1)]
+        public int Columns { get { return columns; } set { columns = Math.Max(1, value); Invalidate(); } }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public IReadOnlyList<KeyValuePair<string, string>> Rows => rows;
+
+        public void SetRows(IEnumerable<KeyValuePair<string, string>> items)
+        {
+            rows.Clear();
+            rows.AddRange(items);
+            Invalidate();
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.Clear(BackColor);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int rowHeight = Theme.S(keycaps ? 34 : 30);
+            int perColumn = (rows.Count + columns - 1) / columns;
+            int columnWidth = Width / columns;
+            const TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix;
+            using (Font labelFont = new Font("Segoe UI Semibold", keycaps ? 8.25f : 9f))
+            using (Font valueFont = new Font("Segoe UI", 9.75f))
+            using (Pen divider = new Pen(Theme.CardBorder))
+            {
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    int column = i / perColumn;
+                    int x = column * columnWidth;
+                    int y = (i % perColumn) * rowHeight;
+                    int labelWidth = keycaps ? Theme.S(96) : Theme.S(150);
+                    Rectangle labelBox = new Rectangle(x, y, labelWidth, rowHeight);
+                    Rectangle valueBox = new Rectangle(x + labelWidth + Theme.S(10), y, columnWidth - labelWidth - Theme.S(18), rowHeight);
+                    if (keycaps)
+                    {
+                        Size size = TextRenderer.MeasureText(g, rows[i].Key, labelFont, Size.Empty, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+                        Rectangle cap = new Rectangle(x, y + (rowHeight - Theme.S(24)) / 2, Math.Min(labelWidth, size.Width + Theme.S(18)), Theme.S(24));
+                        using (GraphicsPath path = Theme.RoundedRect(new RectangleF(cap.X + 0.5f, cap.Y + 0.5f, cap.Width - 1f, cap.Height - 1f), Theme.S(6)))
+                        using (SolidBrush fill = new SolidBrush(Theme.SurfaceAlt))
+                        using (Pen border = new Pen(Theme.Border))
+                        {
+                            g.FillPath(fill, path);
+                            g.DrawPath(border, path);
+                        }
+                        TextRenderer.DrawText(g, rows[i].Key, labelFont, cap, Theme.TextSecondary, flags | TextFormatFlags.HorizontalCenter);
+                    }
+                    else
+                    {
+                        TextRenderer.DrawText(g, rows[i].Key, labelFont, labelBox, Theme.TextMuted, flags);
+                        if (i % perColumn < perColumn - 1 && i < rows.Count - 1)
+                        {
+                            g.DrawLine(divider, x, y + rowHeight - 1, x + columnWidth - Theme.S(8), y + rowHeight - 1);
+                        }
+                    }
+                    TextRenderer.DrawText(g, rows[i].Value, valueFont, valueBox, Theme.Text, flags);
+                }
+            }
+        }
+    }
 }
