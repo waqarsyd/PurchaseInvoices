@@ -361,7 +361,7 @@ namespace PurchaseInvoices
             this.headerPanel.Controls.Add(this.btnNext);
             this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.headerPanel.ForeColor = System.Drawing.Color.White;
-            this.headerPanel.Glyph = "";
+            this.headerPanel.ShowLogo = true;
             this.headerPanel.Location = new System.Drawing.Point(0, 0);
             this.headerPanel.Name = "headerPanel";
             this.headerPanel.Size = new System.Drawing.Size(1120, 64);

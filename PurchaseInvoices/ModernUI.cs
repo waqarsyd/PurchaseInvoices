@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -43,6 +44,7 @@ namespace PurchaseInvoices
         private static float scale;
         private static int iconFontState;
         private static Icon appIcon;
+        private static Image logo;
 
         public static float Scale
         {
@@ -154,31 +156,40 @@ namespace PurchaseInvoices
             {
                 if (appIcon == null)
                 {
-                    using (Bitmap bmp = new Bitmap(64, 64))
+                    using (Stream stream = typeof(Theme).Assembly.GetManifestResourceStream("PurchaseInvoices.AppLogo.ico"))
                     {
-                        using (Graphics g = Graphics.FromImage(bmp))
-                        {
-                            g.SmoothingMode = SmoothingMode.AntiAlias;
-                            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                            using (GraphicsPath p = RoundedRect(new RectangleF(2, 2, 60, 60), 15))
-                            using (LinearGradientBrush b = new LinearGradientBrush(new Rectangle(0, 0, 64, 64), Accent, Accent2, 45f))
-                            {
-                                g.FillPath(b, p);
-                            }
-                            if (HasIconFont)
-                            {
-                                using (Font f = new Font(IconFontName, 30f, GraphicsUnit.Pixel))
-                                using (StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
-                                {
-                                    g.DrawString("", f, Brushes.White, new RectangleF(0, 2, 64, 64), sf);
-                                }
-                            }
-                        }
-                        appIcon = Icon.FromHandle(bmp.GetHicon());
+                        appIcon = new Icon(stream);
                     }
                 }
                 return appIcon;
             }
+        }
+
+        public static Image Logo
+        {
+            get
+            {
+                if (logo == null)
+                {
+                    using (Stream stream = typeof(Theme).Assembly.GetManifestResourceStream("PurchaseInvoices.AppLogo.png"))
+                    using (Image image = Image.FromStream(stream))
+                    {
+                        logo = new Bitmap(image);
+                    }
+                }
+                return logo;
+            }
+        }
+
+        public static void DrawLogo(Graphics g, Rectangle bounds)
+        {
+            InterpolationMode interpolation = g.InterpolationMode;
+            PixelOffsetMode offset = g.PixelOffsetMode;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.DrawImage(Logo, bounds);
+            g.InterpolationMode = interpolation;
+            g.PixelOffsetMode = offset;
         }
 
         private static void FitToWorkingArea(Form form, Size minimum)
@@ -814,6 +825,7 @@ namespace PurchaseInvoices
         private string title = string.Empty;
         private string subtitle = string.Empty;
         private string glyph = string.Empty;
+        private bool showLogo;
 
         public HeaderPanel()
         {
@@ -831,6 +843,9 @@ namespace PurchaseInvoices
         [DefaultValue("")]
         public string Glyph { get { return glyph; } set { glyph = value ?? string.Empty; Invalidate(); } }
 
+        [DefaultValue(false)]
+        public bool ShowLogo { get { return showLogo; } set { showLogo = value; Invalidate(); } }
+
         protected override void OnPaintBackground(PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -846,14 +861,21 @@ namespace PurchaseInvoices
             Glow(g, new Rectangle(Width - Theme.S(520), -Theme.S(170), Theme.S(560), Theme.S(340)), Color.FromArgb(80, Theme.Accent2));
             Glow(g, new Rectangle(Width / 3, Height / 2, Theme.S(420), Theme.S(200)), Color.FromArgb(36, Theme.Accent));
 
-            int tileSize = Theme.S(40);
-            Rectangle tile = new Rectangle(Theme.S(20), (Height - tileSize) / 2, tileSize, tileSize);
-            using (GraphicsPath path = Theme.RoundedRect(tile, Theme.S(11)))
-            using (LinearGradientBrush tileBrush = new LinearGradientBrush(tile, Theme.Accent, Theme.Accent2, 45f))
+            int tileSize = Theme.S(showLogo ? 44 : 40);
+            Rectangle tile = new Rectangle(Theme.S(showLogo ? 18 : 20), (Height - tileSize) / 2, tileSize, tileSize);
+            if (showLogo)
             {
-                g.FillPath(tileBrush, path);
+                Theme.DrawLogo(g, tile);
             }
-            Theme.DrawGlyph(g, glyph, 14f, new Rectangle(tile.X, tile.Y + Theme.S(1), tile.Width, tile.Height), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            else
+            {
+                using (GraphicsPath path = Theme.RoundedRect(tile, Theme.S(11)))
+                using (LinearGradientBrush tileBrush = new LinearGradientBrush(tile, Theme.Accent, Theme.Accent2, 45f))
+                {
+                    g.FillPath(tileBrush, path);
+                }
+                Theme.DrawGlyph(g, glyph, 14f, new Rectangle(tile.X, tile.Y + Theme.S(1), tile.Width, tile.Height), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            }
 
             int textX = tile.Right + Theme.S(14);
             using (Font titleFont = new Font("Segoe UI Semibold", 14f))
