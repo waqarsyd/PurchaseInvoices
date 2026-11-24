@@ -109,6 +109,50 @@ namespace PurchaseInvoices
             btnPrevious.Enabled = ready;
             btnNext.Enabled = ready;
             button1.Enabled = ready;
+            btnCustomers.Enabled = ready;
+            btnItems.Enabled = ready;
+        }
+        private void btnCustomers_Click(object sender, EventArgs e)
+        {
+            OpenMaster(MasterDefinition.Customers);
+        }
+        private void btnItems_Click(object sender, EventArgs e)
+        {
+            OpenMaster(MasterDefinition.Items);
+        }
+        private void OpenMaster(MasterDefinition definition)
+        {
+            using (MasterForm form = new MasterForm(connectionString, definition))
+            {
+                form.ShowDialog(this);
+                if (form.DataChanged)
+                {
+                    RefreshLookups();
+                }
+            }
+        }
+        private void RefreshLookups()
+        {
+            bool editing = btnSave.Enabled;
+            string customer = comboCustId.SelectedItem?.ToString();
+            string item = combo_Itemcode.SelectedItem?.ToString();
+            comboCustId.Items.Clear();
+            combo_Itemcode.Items.Clear();
+            bindComboBox();
+            bindComboBox_1();
+            if (!editing)
+            {
+                if (txtTransNo.Text.Length > 0)
+                {
+                    LoadRecord(txtTransNo.Text);
+                }
+                return;
+            }
+            comboCustId.SelectedIndex = customer == null ? -1 : comboCustId.FindStringExact(customer);
+            if (comboCustId.SelectedIndex >= 0 && item != null)
+            {
+                combo_Itemcode.SelectedIndex = combo_Itemcode.FindStringExact(item);
+            }
         }
         private void btnCreateTables_Click(object sender, EventArgs e)
         {
@@ -381,7 +425,7 @@ namespace PurchaseInvoices
         }
         private void bindComboBox()
         {
-            String qry = "select * from CUSTOMER_MASTER";
+            String qry = "select * from CUSTOMER_MASTER order by CUSTID";
             SqlCommand cmd = new SqlCommand(qry, con);
             con.Open();
             SqlDataReader dr = cmd.ExecuteReader();
@@ -413,7 +457,7 @@ namespace PurchaseInvoices
         }
         private void bindComboBox_1()
         {
-            string qry = "select * from ITEM_MASTER";
+            string qry = "select * from ITEM_MASTER order by ITEM_CODE";
             SqlCommand cmd = new SqlCommand(qry, con);
             con.Open();
             SqlDataReader sdr = cmd.ExecuteReader();

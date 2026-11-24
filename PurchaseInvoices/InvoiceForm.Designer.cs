@@ -40,6 +40,8 @@ namespace PurchaseInvoices
             this.btnNext = new PurchaseInvoices.ModernButton();
             this.footerPanel = new PurchaseInvoices.FooterPanel();
             this.btnCreateTables = new PurchaseInvoices.ModernButton();
+            this.btnCustomers = new PurchaseInvoices.ModernButton();
+            this.btnItems = new PurchaseInvoices.ModernButton();
             this.btnPrint = new PurchaseInvoices.ModernButton();
             this.btnNew = new PurchaseInvoices.ModernButton();
             this.btnSave = new PurchaseInvoices.ModernButton();
@@ -173,6 +175,8 @@ namespace PurchaseInvoices
             // footerPanel
             //
             this.footerPanel.Controls.Add(this.btnCreateTables);
+            this.footerPanel.Controls.Add(this.btnCustomers);
+            this.footerPanel.Controls.Add(this.btnItems);
             this.footerPanel.Controls.Add(this.btnPrint);
             this.footerPanel.Controls.Add(this.btnNew);
             this.footerPanel.Controls.Add(this.btnSave);
@@ -194,6 +198,28 @@ namespace PurchaseInvoices
             this.btnCreateTables.Text = "Create Tables";
             this.btnCreateTables.Click += new System.EventHandler(this.btnCreateTables_Click);
             //
+            // btnCustomers
+            //
+            this.btnCustomers.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnCustomers.Glyph = "";
+            this.btnCustomers.Location = new System.Drawing.Point(190, 12);
+            this.btnCustomers.Name = "btnCustomers";
+            this.btnCustomers.Size = new System.Drawing.Size(140, 36);
+            this.btnCustomers.TabIndex = 1;
+            this.btnCustomers.Text = "Customers";
+            this.btnCustomers.Click += new System.EventHandler(this.btnCustomers_Click);
+            //
+            // btnItems
+            //
+            this.btnItems.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnItems.Glyph = "";
+            this.btnItems.Location = new System.Drawing.Point(340, 12);
+            this.btnItems.Name = "btnItems";
+            this.btnItems.Size = new System.Drawing.Size(110, 36);
+            this.btnItems.TabIndex = 2;
+            this.btnItems.Text = "Items";
+            this.btnItems.Click += new System.EventHandler(this.btnItems_Click);
+            //
             // btnPrint
             //
             this.btnPrint.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -202,7 +228,7 @@ namespace PurchaseInvoices
             this.btnPrint.Location = new System.Drawing.Point(660, 12);
             this.btnPrint.Name = "btnPrint";
             this.btnPrint.Size = new System.Drawing.Size(110, 36);
-            this.btnPrint.TabIndex = 1;
+            this.btnPrint.TabIndex = 3;
             this.btnPrint.Text = "Print";
             this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
             //
@@ -214,7 +240,7 @@ namespace PurchaseInvoices
             this.btnNew.Location = new System.Drawing.Point(780, 12);
             this.btnNew.Name = "btnNew";
             this.btnNew.Size = new System.Drawing.Size(150, 36);
-            this.btnNew.TabIndex = 2;
+            this.btnNew.TabIndex = 4;
             this.btnNew.Text = "New Invoice";
             this.btnNew.Click += new System.EventHandler(this.btnNew_Click);
             //
@@ -227,7 +253,7 @@ namespace PurchaseInvoices
             this.btnSave.Location = new System.Drawing.Point(940, 12);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(160, 36);
-            this.btnSave.TabIndex = 3;
+            this.btnSave.TabIndex = 5;
             this.btnSave.Text = "Save Invoice";
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             //
@@ -237,7 +263,7 @@ namespace PurchaseInvoices
             this.txtTotalSum.Name = "txtTotalSum";
             this.txtTotalSum.ReadOnly = true;
             this.txtTotalSum.Size = new System.Drawing.Size(100, 25);
-            this.txtTotalSum.TabIndex = 4;
+            this.txtTotalSum.TabIndex = 6;
             this.txtTotalSum.TabStop = false;
             this.txtTotalSum.Visible = false;
             //
@@ -692,6 +718,8 @@ namespace PurchaseInvoices
         private PurchaseInvoices.ModernButton btnNext;
         private PurchaseInvoices.FooterPanel footerPanel;
         private PurchaseInvoices.ModernButton btnCreateTables;
+        private PurchaseInvoices.ModernButton btnCustomers;
+        private PurchaseInvoices.ModernButton btnItems;
         private PurchaseInvoices.ModernButton btnPrint;
         private PurchaseInvoices.ModernButton btnNew;
         private PurchaseInvoices.ModernButton btnSave;

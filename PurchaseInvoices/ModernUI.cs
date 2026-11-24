@@ -136,11 +136,11 @@ namespace PurchaseInvoices
             g.Restore(state);
         }
 
-        public static void StyleWindow(Form form)
+        public static void StyleWindow(Form form, int minimumWidth = 940, int minimumHeight = 660)
         {
             form.Icon = AppIcon;
             form.HandleCreated += (s, e) => ApplyCaptionColors((Form)s);
-            form.Load += (s, e) => FitToWorkingArea((Form)s);
+            form.Load += (s, e) => FitToWorkingArea((Form)s, new Size(S(minimumWidth), S(minimumHeight)));
             if (form.IsHandleCreated)
             {
                 ApplyCaptionColors(form);
@@ -180,16 +180,19 @@ namespace PurchaseInvoices
             }
         }
 
-        private static void FitToWorkingArea(Form form)
+        private static void FitToWorkingArea(Form form, Size minimum)
         {
-            Rectangle area = Screen.FromPoint(Cursor.Position).WorkingArea;
+            Rectangle area = form.Owner != null ? Screen.FromControl(form.Owner).WorkingArea : Screen.FromPoint(Cursor.Position).WorkingArea;
             int margin = S(12);
             int maxWidth = area.Width - margin * 2;
             int maxHeight = area.Height - margin * 2;
-            form.MinimumSize = new Size(Math.Min(S(940), maxWidth), Math.Min(S(660), maxHeight));
+            form.MinimumSize = new Size(Math.Min(minimum.Width, maxWidth), Math.Min(minimum.Height, maxHeight));
             int width = Math.Min(form.Width, maxWidth);
             int height = Math.Min(form.Height, maxHeight);
-            form.Bounds = new Rectangle(area.X + (area.Width - width) / 2, area.Y + (area.Height - height) / 2, width, height);
+            Rectangle around = form.Owner != null ? form.Owner.Bounds : area;
+            int x = Math.Max(area.Left + margin, Math.Min(around.X + (around.Width - width) / 2, area.Right - margin - width));
+            int y = Math.Max(area.Top + margin, Math.Min(around.Y + (around.Height - height) / 2, area.Bottom - margin - height));
+            form.Bounds = new Rectangle(x, y, width, height);
         }
 
         [DllImport("dwmapi.dll")]
@@ -1145,8 +1148,18 @@ namespace PurchaseInvoices
             SetSelectionVisible(false);
         }
 
+        [DefaultValue(false)]
+        public bool AlwaysShowSelection
+        {
+            get { return alwaysShowSelection; }
+            set { alwaysShowSelection = value; SetSelectionVisible(Focused); }
+        }
+
+        private bool alwaysShowSelection;
+
         private void SetSelectionVisible(bool visible)
         {
+            visible = visible || alwaysShowSelection;
             DefaultCellStyle.SelectionBackColor = visible ? Theme.AccentSoft : Theme.Surface;
             DefaultCellStyle.SelectionForeColor = visible ? Theme.AccentText : Theme.Text;
             AlternatingRowsDefaultCellStyle.SelectionBackColor = visible ? Theme.AccentSoft : Theme.SurfaceAlt;

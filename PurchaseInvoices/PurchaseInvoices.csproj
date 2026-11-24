@@ -54,6 +54,12 @@
     <Compile Include="InvoiceForm.Designer.cs">
       <DependentUpon>InvoiceForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MasterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MasterForm.Designer.cs">
+      <DependentUpon>MasterForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ModernUI.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -85,10 +91,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="app.manifest" />
+    <None Include="Screenshots\CustomersScreen.png" />
     <None Include="Screenshots\InvoiceForm_NewDesign.png" />
     <None Include="Screenshots\InvoiceForm_NewDesign_Editing.png" />
     <None Include="Screenshots\InvoiceForm_OldDesign.png" />
     <None Include="Screenshots\InvoiceForm_OldDesign_WithLabel.png" />
+    <None Include="Screenshots\ItemsScreen.png" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
