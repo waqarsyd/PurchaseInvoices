@@ -112,23 +112,25 @@ namespace PurchaseInvoices
             SetReadOnlyMode(true);
             SetDatabaseReady(false);
 
-            ConnectionStringSettings setting = ConfigurationManager.ConnectionStrings["MYCON"];
-            if (setting == null || string.IsNullOrWhiteSpace(setting.ConnectionString))
+            ConnectToDatabase();
+        }
+        private void ConnectToDatabase()
+        {
+            connectionString = AppConnection.ConnectionString;
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                btnCreateTables.Enabled = false;
-                MessageBox.Show("App.config has no connection string named MYCON.", "Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("No database connection is set up yet. Click \"Database\" to choose the SQL Server and database.", "Database", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
-                connectionString = setting.ConnectionString;
+                con?.Dispose();
                 con = new SqlConnection(connectionString); //-- combination of second or third step...
             }
             catch (ArgumentException ex)
             {
-                btnCreateTables.Enabled = false;
-                MessageBox.Show($"The MYCON connection string in App.config is not valid: {ex.Message}", "Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"The database connection settings are not valid: {ex.Message}\n\nClick \"Database\" to fix them.", "Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -154,7 +156,7 @@ namespace PurchaseInvoices
             {
                 string details = status.Problems.Count > 0
                     ? "These problems must be fixed by hand:\n\n- " + string.Join("\n- ", status.Problems)
-                    : "It needs these changes:\n\n- " + string.Join("\n- ", status.GetPlannedSteps()) + "\n\nClick \"Create Tables\" to make them.";
+                    : "It needs these changes:\n\n- " + string.Join("\n- ", status.GetPlannedSteps()) + "\n\nClick \"Database\" to set it up.";
                 MessageBox.Show($"Database '{status.Database}' on '{status.Server}' is not ready for this application. {details}", "Database", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -259,56 +261,32 @@ namespace PurchaseInvoices
                 cboItem.SelectedIndex = cboItem.FindStringExact(item);
             }
         }
-        private void btnCreateTables_Click(object sender, EventArgs e)
+        private void btnDatabase_Click(object sender, EventArgs e)
         {
-            DatabaseStatus status;
-            try
-            {
-                status = DatabaseSetup.GetStatus(connectionString);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Could not check the database: {ex.Message}", "Create Tables", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            string target = $"database '{status.Database}' on server '{status.Server}'";
-            if (status.Problems.Count > 0)
-            {
-                MessageBox.Show($"Nothing was changed. These problems in {target} must be fixed by hand first:\n\n- " + string.Join("\n- ", status.Problems), "Create Tables", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-            if (status.IsReady)
-            {
-                MessageBox.Show($"All tables already exist in {target}. Nothing to create.", "Create Tables", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            string plan = "- " + string.Join("\n- ", status.GetPlannedSteps());
-            if (MessageBox.Show($"This will make these changes in {target}:\n\n{plan}\n\nExisting tables and data are not changed. Continue?", "Create Tables", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            if (!ConfirmDiscardInvoice())
             {
                 return;
             }
-
-            bool databaseCreated = false;
-            try
+            bool reload;
+            using (DatabaseSettingsForm settings = new DatabaseSettingsForm())
             {
-                if (!status.DatabaseExists)
-                {
-                    DatabaseSetup.CreateDatabase(connectionString);
-                    databaseCreated = true;
-                }
-                DatabaseSetup.ApplyTableChanges(connectionString, status);
+                settings.ShowDialog(this);
+                reload = settings.NeedsReload;
             }
-            catch (Exception ex)
+            if (reload)
             {
-                string note = databaseCreated ? $"\n\nDatabase '{status.Database}' was created but is still empty." : string.Empty;
-                MessageBox.Show($"Setup failed: {ex.Message}\n\nNo tables were created or changed.{note}", "Create Tables", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                ReconnectDatabase();
             }
-
-            MessageBox.Show($"Done. Changes made in {target}:\n\n{plan}", "Create Tables", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            LoadFormData();
+        }
+        private void ReconnectDatabase()
+        {
+            ClearInvoice();
+            cboCustomer.Items.Clear();
+            cboItem.Items.Clear();
+            transNumbers = new List<string>();
+            currentIndex = 0;
+            SetDatabaseReady(false);
+            ConnectToDatabase();
         }
         private List<string> GetTransNumbers()
         {

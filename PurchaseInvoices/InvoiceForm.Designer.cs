@@ -50,7 +50,7 @@ namespace PurchaseInvoices
             this.btnAdd = new PurchaseInvoices.ModernButton();
             this.btnCustomers = new PurchaseInvoices.ModernButton();
             this.btnItems = new PurchaseInvoices.ModernButton();
-            this.btnCreateTables = new PurchaseInvoices.ModernButton();
+            this.btnDatabase = new PurchaseInvoices.ModernButton();
             this.headerPanel = new PurchaseInvoices.HeaderPanel();
             this.hostSearch = new PurchaseInvoices.FieldHost();
             this.txtSearch = new System.Windows.Forms.TextBox();
@@ -335,21 +335,21 @@ namespace PurchaseInvoices
             this.btnItems.UseVisualStyleBackColor = false;
             this.btnItems.Click += new System.EventHandler(this.btnItems_Click);
             // 
-            // btnCreateTables
+            // btnDatabase
             // 
-            this.btnCreateTables.BackColor = System.Drawing.Color.Transparent;
-            this.btnCreateTables.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnCreateTables.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCreateTables.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
-            this.btnCreateTables.Glyph = "";
-            this.btnCreateTables.Location = new System.Drawing.Point(20, 12);
-            this.btnCreateTables.Name = "btnCreateTables";
-            this.btnCreateTables.Size = new System.Drawing.Size(160, 36);
-            this.btnCreateTables.TabIndex = 0;
-            this.btnCreateTables.Text = "Create Tables";
-            this.toolTip.SetToolTip(this.btnCreateTables, "Create the database tables if any are missing");
-            this.btnCreateTables.UseVisualStyleBackColor = false;
-            this.btnCreateTables.Click += new System.EventHandler(this.btnCreateTables_Click);
+            this.btnDatabase.BackColor = System.Drawing.Color.Transparent;
+            this.btnDatabase.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnDatabase.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnDatabase.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnDatabase.Glyph = "";
+            this.btnDatabase.Location = new System.Drawing.Point(20, 12);
+            this.btnDatabase.Name = "btnDatabase";
+            this.btnDatabase.Size = new System.Drawing.Size(160, 36);
+            this.btnDatabase.TabIndex = 0;
+            this.btnDatabase.Text = "Database";
+            this.toolTip.SetToolTip(this.btnDatabase, "Choose the SQL Server and database, test the connection, or create missing tables");
+            this.btnDatabase.UseVisualStyleBackColor = false;
+            this.btnDatabase.Click += new System.EventHandler(this.btnDatabase_Click);
             // 
             // headerPanel
             // 
@@ -396,7 +396,7 @@ namespace PurchaseInvoices
             // footerPanel
             // 
             this.footerPanel.BackColor = System.Drawing.Color.White;
-            this.footerPanel.Controls.Add(this.btnCreateTables);
+            this.footerPanel.Controls.Add(this.btnDatabase);
             this.footerPanel.Controls.Add(this.btnCustomers);
             this.footerPanel.Controls.Add(this.btnItems);
             this.footerPanel.Controls.Add(this.btnPrint);
@@ -940,7 +940,7 @@ namespace PurchaseInvoices
         private PurchaseInvoices.ModernButton btnPrevious;
         private PurchaseInvoices.ModernButton btnNext;
         private PurchaseInvoices.FooterPanel footerPanel;
-        private PurchaseInvoices.ModernButton btnCreateTables;
+        private PurchaseInvoices.ModernButton btnDatabase;
         private PurchaseInvoices.ModernButton btnCustomers;
         private PurchaseInvoices.ModernButton btnItems;
         private PurchaseInvoices.ModernButton btnPrint;
