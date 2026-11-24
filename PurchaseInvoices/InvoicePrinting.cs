@@ -43,7 +43,7 @@ namespace PurchaseInvoices
         public List<InvoicePrintLine> Lines { get; } = new List<InvoicePrintLine>();
     }
 
-    internal sealed class InvoicePrintDocument : PrintDocument
+    internal sealed class InvoicePrintDocument : PagedPrintDocument
     {
         private const float FirstHeaderHeight = 240f;
         private const float ContinuedHeaderHeight = 62f;
@@ -80,7 +80,7 @@ namespace PurchaseInvoices
             DocumentName = data.InvoiceNo.Length > 0 ? "Purchase invoice " + data.InvoiceNo : "Purchase invoice";
         }
 
-        public int TotalPages => plan.Count;
+        public override int TotalPages => plan.Count;
 
         private struct PagePlan
         {

@@ -91,6 +91,10 @@ namespace PurchaseInvoices
 
         private void btnReports_Click(object sender, EventArgs e)
         {
+            using (ReportsForm reports = new ReportsForm(connectionString))
+            {
+                reports.ShowDialog(this);
+            }
         }
 
         private void OpenUsers()
@@ -234,6 +238,9 @@ namespace PurchaseInvoices
                     return true;
                 case Keys.Control | Keys.L:
                     btnAllInvoices.PerformClick();
+                    return true;
+                case Keys.Control | Keys.R:
+                    btnReports.PerformClick();
                     return true;
                 case Keys.Alt | Keys.Left:
                     btnPrevious.PerformClick();

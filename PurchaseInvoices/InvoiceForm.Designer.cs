@@ -349,7 +349,6 @@ namespace PurchaseInvoices
             this.btnReports.Size = new System.Drawing.Size(160, 36);
             this.btnReports.TabIndex = 0;
             this.btnReports.Text = "Reports";
-            this.btnReports.Visible = false;
             this.toolTip.SetToolTip(this.btnReports, "Purchase reports by customer, item and month (Ctrl+R)");
             this.btnReports.UseVisualStyleBackColor = false;
             this.btnReports.Click += new System.EventHandler(this.btnReports_Click);

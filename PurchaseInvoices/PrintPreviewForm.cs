@@ -6,10 +6,10 @@ namespace PurchaseInvoices
 {
     internal partial class PrintPreviewForm : Form
     {
-        private readonly InvoicePrintDocument document;
+        private readonly PagedPrintDocument document;
         private BusyIndicator loading;
 
-        public PrintPreviewForm(InvoicePrintDocument document)
+        public PrintPreviewForm(PagedPrintDocument document)
         {
             InitializeComponent();
             Theme.StyleWindow(this, 640, 520);

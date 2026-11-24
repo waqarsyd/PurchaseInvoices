@@ -1601,4 +1601,88 @@ namespace PurchaseInvoices
             public override Color SeparatorLight => Theme.Surface;
         }
     }
+
+    public class StatTile : Control
+    {
+        private string caption = string.Empty;
+        private string value = string.Empty;
+        private string hint = string.Empty;
+        private bool highlight;
+
+        public StatTile()
+        {
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+            SetStyle(ControlStyles.Selectable, false);
+            TabStop = false;
+        }
+
+        [DefaultValue("")]
+        public string Caption { get { return caption; } set { caption = value ?? string.Empty; Invalidate(); } }
+
+        [DefaultValue("")]
+        public string Value { get { return value; } set { this.value = value ?? string.Empty; Invalidate(); } }
+
+        [DefaultValue("")]
+        public string Hint { get { return hint; } set { hint = value ?? string.Empty; Invalidate(); } }
+
+        [DefaultValue(false)]
+        public bool Highlight { get { return highlight; } set { highlight = value; Invalidate(); } }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.Clear(Parent?.BackColor ?? Theme.Canvas);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int inset = CardPanel.ShadowSize;
+            Rectangle card = new Rectangle(inset, inset, Width - inset * 2, Height - inset * 2);
+            if (card.Width <= 0 || card.Height <= 0)
+            {
+                return;
+            }
+            Theme.FillShadow(g, card, CardPanel.Radius, inset, highlight ? Theme.Accent : Theme.Shadow, highlight ? 60 : 30);
+            using (GraphicsPath path = Theme.RoundedRect(new RectangleF(card.X + 0.5f, card.Y + 0.5f, card.Width - 1f, card.Height - 1f), CardPanel.Radius))
+            {
+                if (highlight)
+                {
+                    using (LinearGradientBrush brush = new LinearGradientBrush(card, Theme.Accent, Theme.Accent2, 35f))
+                    {
+                        g.FillPath(brush, path);
+                    }
+                }
+                else
+                {
+                    using (SolidBrush fill = new SolidBrush(Theme.Surface))
+                    using (Pen pen = new Pen(Theme.CardBorder, 1f))
+                    {
+                        g.FillPath(fill, path);
+                        g.DrawPath(pen, path);
+                    }
+                }
+            }
+
+            int left = card.X + Theme.S(18);
+            int width = card.Width - Theme.S(36);
+            Color captionColor = highlight ? Color.FromArgb(224, 231, 255) : Theme.TextMuted;
+            Color valueColor = highlight ? Color.White : Theme.Text;
+            const TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix;
+            using (Font captionFont = new Font("Segoe UI Semibold", 7.75f))
+            using (Font hintFont = new Font("Segoe UI", 8.75f))
+            {
+                TextRenderer.DrawText(g, caption, captionFont, new Rectangle(left, card.Y + Theme.S(14), width, Theme.S(16)), captionColor, flags);
+                float points = 17f;
+                Font valueFont = new Font("Segoe UI Semibold", points);
+                while (points > 10f && TextRenderer.MeasureText(g, value, valueFont, Size.Empty, flags).Width > width)
+                {
+                    valueFont.Dispose();
+                    points -= 1f;
+                    valueFont = new Font("Segoe UI Semibold", points);
+                }
+                using (valueFont)
+                {
+                    TextRenderer.DrawText(g, value, valueFont, new Rectangle(left - Theme.S(1), card.Y + Theme.S(32), width, Theme.S(34)), valueColor, flags | TextFormatFlags.VerticalCenter);
+                }
+                TextRenderer.DrawText(g, hint, hintFont, new Rectangle(left, card.Bottom - Theme.S(26), width, Theme.S(18)), captionColor, flags);
+            }
+        }
+    }
 }
