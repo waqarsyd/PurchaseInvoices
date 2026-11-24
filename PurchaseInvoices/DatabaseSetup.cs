@@ -10,13 +10,38 @@ namespace PurchaseInvoices
         public TableDefinition(string name, params string[] columnDefinitions)
         {
             Name = name;
+            Definitions = columnDefinitions;
             Columns = columnDefinitions.Select(d => d.Split(' ')[0]).ToArray();
             CreateSql = $"CREATE TABLE dbo.{name} ({string.Join(", ", columnDefinitions)})";
         }
 
         public string Name { get; }
         public string[] Columns { get; }
+        public string[] Definitions { get; }
         public string CreateSql { get; }
+
+        public string Definition(string column) => Definitions[Array.FindIndex(Columns, c => string.Equals(c, column, StringComparison.OrdinalIgnoreCase))];
+
+        public bool CanAdd(string column)
+        {
+            string definition = " " + Definition(column).ToUpperInvariant() + " ";
+            bool required = definition.Contains(" NOT NULL ");
+            bool keyOrIdentity = definition.Contains(" PRIMARY KEY ") || definition.Contains(" IDENTITY");
+            return !keyOrIdentity && (!required || definition.Contains(" DEFAULT "));
+        }
+    }
+
+    internal sealed class MissingColumn
+    {
+        public MissingColumn(string table, string column)
+        {
+            Table = table;
+            Column = column;
+        }
+
+        public string Table { get; }
+        public string Column { get; }
+        public override string ToString() => Table + "." + Column;
     }
 
     internal sealed class DatabaseStatus
@@ -26,9 +51,10 @@ namespace PurchaseInvoices
         public bool DatabaseExists { get; set; }
         public bool RenameOldTransId { get; set; }
         public List<string> MissingTables { get; } = new List<string>();
+        public List<MissingColumn> MissingColumns { get; } = new List<MissingColumn>();
         public List<string> Problems { get; } = new List<string>();
 
-        public bool IsReady => DatabaseExists && !RenameOldTransId && MissingTables.Count == 0 && Problems.Count == 0;
+        public bool IsReady => DatabaseExists && !RenameOldTransId && MissingTables.Count == 0 && MissingColumns.Count == 0 && Problems.Count == 0;
 
         public List<string> GetPlannedSteps()
         {
@@ -44,6 +70,10 @@ namespace PurchaseInvoices
             foreach (string table in MissingTables)
             {
                 steps.Add($"Create table {table}");
+            }
+            foreach (MissingColumn column in MissingColumns)
+            {
+                steps.Add($"Add column {column}");
             }
             return steps;
         }
@@ -68,7 +98,11 @@ namespace PurchaseInvoices
                 "TRANS_DATE DATETIME NULL",
                 "TRANS_NO NUMERIC(18,0) NULL",
                 "CUST_ID VARCHAR(6) NULL",
-                "TOTAL_AMOUNT NUMERIC(18,2) NULL"),
+                "TOTAL_AMOUNT NUMERIC(18,2) NULL",
+                "CREATED_BY VARCHAR(30) NULL",
+                "CREATED_AT DATETIME NULL",
+                "MODIFIED_BY VARCHAR(30) NULL",
+                "MODIFIED_AT DATETIME NULL"),
             new TableDefinition("PURCH_DETAIL",
                 "TRANS_ID NUMERIC(18,0) NULL REFERENCES dbo.PURCH_HEADER (TRANS_ID)",
                 "SLNO NUMERIC(6,0) NULL",
@@ -76,7 +110,34 @@ namespace PurchaseInvoices
                 "QTY NUMERIC(6,0) NULL",
                 "RATE NUMERIC(18,2) NULL",
                 "AMOUNT NUMERIC(18,2) NULL"),
+            new TableDefinition("APP_USERS",
+                "USERID INT IDENTITY(1,1) NOT NULL PRIMARY KEY",
+                "USERNAME VARCHAR(30) NOT NULL UNIQUE",
+                "FULL_NAME VARCHAR(60) NULL",
+                "USER_ROLE VARCHAR(10) NOT NULL",
+                "PASSWORD_HASH VARCHAR(200) NOT NULL",
+                "IS_ACTIVE BIT NOT NULL DEFAULT 1",
+                "MUST_CHANGE_PASSWORD BIT NOT NULL DEFAULT 0",
+                "FAILED_SIGN_INS INT NOT NULL DEFAULT 0",
+                "LOCKED_UNTIL DATETIME NULL",
+                "LAST_SIGN_IN DATETIME NULL",
+                "CREATED_AT DATETIME NOT NULL DEFAULT GETDATE()"),
+            new TableDefinition("APP_ACTIVITY",
+                "ACTIVITY_ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY",
+                "ACTIVITY_AT DATETIME NOT NULL DEFAULT GETDATE()",
+                "USERNAME VARCHAR(30) NULL",
+                "ACTIVITY VARCHAR(40) NOT NULL",
+                "DETAILS VARCHAR(400) NULL"),
+            new TableDefinition("COMPANY_PROFILE",
+                "PROFILE_ID INT NOT NULL PRIMARY KEY",
+                "COMPANY_NAME VARCHAR(100) NULL",
+                "COMPANY_ADDRESS VARCHAR(500) NULL",
+                "PHONE VARCHAR(30) NULL",
+                "EMAIL VARCHAR(100) NULL",
+                "TAX_NUMBER VARCHAR(30) NULL"),
         };
+
+        public static IReadOnlyList<string> TableNames => Tables.Select(t => t.Name).ToList();
 
         public static DatabaseStatus GetStatus(string connectionString)
         {
@@ -135,7 +196,14 @@ namespace PurchaseInvoices
 
                     foreach (string column in table.Columns.Where(c => !Contains(existing, c)))
                     {
-                        status.Problems.Add($"{fullName} is missing column {column}.");
+                        if (table.CanAdd(column))
+                        {
+                            status.MissingColumns.Add(new MissingColumn(table.Name, column));
+                        }
+                        else
+                        {
+                            status.Problems.Add($"{fullName} is missing column {column}.");
+                        }
                     }
                 }
             }
@@ -168,6 +236,11 @@ namespace PurchaseInvoices
                     foreach (TableDefinition table in Tables.Where(t => status.MissingTables.Contains(t.Name)))
                     {
                         Execute(con, transaction, table.CreateSql);
+                    }
+                    foreach (MissingColumn column in status.MissingColumns)
+                    {
+                        TableDefinition table = Tables.First(t => t.Name == column.Table);
+                        Execute(con, transaction, $"ALTER TABLE dbo.{table.Name} ADD {table.Definition(column.Column)}");
                     }
                     transaction.Commit();
                 }
