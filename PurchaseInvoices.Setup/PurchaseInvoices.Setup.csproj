@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8C1E4F27-6B3A-4D59-9E02-5A7D3B9C1F64}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>PurchaseInvoices.Setup</RootNamespace>
+    <AssemblyName>PurchaseInvoicesSetup</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <LangVersion>7.3</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\PurchaseInvoices\Resources\AppLogo.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Installer.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SetupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.manifest" />
+    <EmbeddedResource Include="..\PurchaseInvoices\Resources\AppLogo.png">
+      <Link>AppLogo.png</Link>
+      <LogicalName>PurchaseInvoices.Setup.AppLogo.png</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PurchaseInvoices\PurchaseInvoices.csproj">
+      <Project>{9A4A1570-7B37-4933-BF74-7FDCF97DF7D3}</Project>
+      <Name>PurchaseInvoices</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="BuildPayload" BeforeTargets="AssignTargetPaths" DependsOnTargets="ResolveProjectReferences">
+    <PropertyGroup>
+      <PayloadSource>$(MSBuildProjectDirectory)\..\PurchaseInvoices\bin\$(Configuration)\</PayloadSource>
+      <PayloadStaging>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)payload\</PayloadStaging>
+      <PayloadZip>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)payload.zip</PayloadZip>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(PayloadSource)PurchaseInvoices.exe')" Text="Build the PurchaseInvoices project ($(Configuration)) before the setup." />
+    <GetAssemblyIdentity AssemblyFiles="$(PayloadSource)PurchaseInvoices.exe">
+      <Output TaskParameter="Assemblies" ItemName="PayloadIdentity" />
+    </GetAssemblyIdentity>
+    <RemoveDir Directories="$(PayloadStaging)" />
+    <Copy SourceFiles="$(PayloadSource)PurchaseInvoices.exe;$(PayloadSource)PurchaseInvoices.exe.config" DestinationFolder="$(PayloadStaging)" />
+    <WriteLinesToFile File="$(PayloadStaging)version.txt" Lines="%(PayloadIdentity.Version)" Overwrite="true" />
+    <ZipDirectory SourceDirectory="$(PayloadStaging)" DestinationFile="$(PayloadZip)" Overwrite="true" />
+    <ItemGroup>
+      <EmbeddedResource Include="$(PayloadZip)">
+        <LogicalName>PurchaseInvoices.Setup.payload.zip</LogicalName>
+      </EmbeddedResource>
+    </ItemGroup>
+  </Target>
+</Project>

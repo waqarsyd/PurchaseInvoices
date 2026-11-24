@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PurchaseInvoices", "PurchaseInvoices\PurchaseInvoices.csproj", "{9A4A1570-7B37-4933-BF74-7FDCF97DF7D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PurchaseInvoices.Setup", "PurchaseInvoices.Setup\PurchaseInvoices.Setup.csproj", "{8C1E4F27-6B3A-4D59-9E02-5A7D3B9C1F64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{9A4A1570-7B37-4933-BF74-7FDCF97DF7D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A4A1570-7B37-4933-BF74-7FDCF97DF7D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A4A1570-7B37-4933-BF74-7FDCF97DF7D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C1E4F27-6B3A-4D59-9E02-5A7D3B9C1F64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C1E4F27-6B3A-4D59-9E02-5A7D3B9C1F64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C1E4F27-6B3A-4D59-9E02-5A7D3B9C1F64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C1E4F27-6B3A-4D59-9E02-5A7D3B9C1F64}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
