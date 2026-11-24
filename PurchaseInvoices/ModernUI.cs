@@ -228,7 +228,8 @@ namespace PurchaseInvoices
         Primary,
         Soft,
         Secondary,
-        Ghost
+        Ghost,
+        Danger
     }
 
     public class ModernButton : Button
@@ -357,6 +358,10 @@ namespace PurchaseInvoices
                     case ButtonKind.Soft:
                         Fill(g, path, !Enabled ? Theme.ReadOnlyFill : pressing ? Theme.AccentSoftPressed : hovering ? Theme.AccentSoftHover : Theme.AccentSoft);
                         textColor = Enabled ? Theme.AccentText : Theme.TextFaint;
+                        break;
+                    case ButtonKind.Danger:
+                        Fill(g, path, !Enabled ? Theme.ReadOnlyFill : pressing ? Color.FromArgb(254, 202, 202) : hovering ? Color.FromArgb(254, 226, 226) : Color.FromArgb(254, 242, 242));
+                        textColor = Enabled ? Color.FromArgb(185, 28, 28) : Theme.TextFaint;
                         break;
                     case ButtonKind.Ghost:
                         Fill(g, path, Color.FromArgb(!Enabled ? 8 : pressing ? 64 : hovering ? 44 : 24, 255, 255, 255));

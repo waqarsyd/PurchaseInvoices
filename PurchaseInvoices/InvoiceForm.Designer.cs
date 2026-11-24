@@ -70,6 +70,9 @@ namespace PurchaseInvoices
             this.btnAdd = new PurchaseInvoices.ModernButton();
             this.topRow = new System.Windows.Forms.Panel();
             this.detailsCard = new PurchaseInvoices.CardPanel();
+            this.btnEditInvoice = new PurchaseInvoices.ModernButton();
+            this.btnDeleteInvoice = new PurchaseInvoices.ModernButton();
+            this.btnCancelEdit = new PurchaseInvoices.ModernButton();
             this.label1 = new System.Windows.Forms.Label();
             this.hostTransNo = new PurchaseInvoices.FieldHost();
             this.txtTransNo = new System.Windows.Forms.TextBox();
@@ -530,6 +533,9 @@ namespace PurchaseInvoices
             this.detailsCard.Controls.Add(this.hostCustName);
             this.detailsCard.Controls.Add(this.label3);
             this.detailsCard.Controls.Add(this.hostCustAddress);
+            this.detailsCard.Controls.Add(this.btnEditInvoice);
+            this.detailsCard.Controls.Add(this.btnDeleteInvoice);
+            this.detailsCard.Controls.Add(this.btnCancelEdit);
             this.detailsCard.Dock = System.Windows.Forms.DockStyle.Fill;
             this.detailsCard.Glyph = "";
             this.detailsCard.Location = new System.Drawing.Point(0, 0);
@@ -537,6 +543,47 @@ namespace PurchaseInvoices
             this.detailsCard.Size = new System.Drawing.Size(772, 188);
             this.detailsCard.TabIndex = 0;
             this.detailsCard.Title = "Invoice details";
+            //
+            // btnEditInvoice
+            //
+            this.btnEditInvoice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnEditInvoice.Enabled = false;
+            this.btnEditInvoice.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnEditInvoice.Glyph = "";
+            this.btnEditInvoice.Kind = PurchaseInvoices.ButtonKind.Soft;
+            this.btnEditInvoice.Location = new System.Drawing.Point(544, 13);
+            this.btnEditInvoice.Name = "btnEditInvoice";
+            this.btnEditInvoice.Size = new System.Drawing.Size(92, 30);
+            this.btnEditInvoice.TabIndex = 4;
+            this.btnEditInvoice.Text = "Edit";
+            this.btnEditInvoice.Click += new System.EventHandler(this.btnEditInvoice_Click);
+            //
+            // btnDeleteInvoice
+            //
+            this.btnDeleteInvoice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnDeleteInvoice.Enabled = false;
+            this.btnDeleteInvoice.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnDeleteInvoice.Glyph = "";
+            this.btnDeleteInvoice.Kind = PurchaseInvoices.ButtonKind.Danger;
+            this.btnDeleteInvoice.Location = new System.Drawing.Point(644, 13);
+            this.btnDeleteInvoice.Name = "btnDeleteInvoice";
+            this.btnDeleteInvoice.Size = new System.Drawing.Size(104, 30);
+            this.btnDeleteInvoice.TabIndex = 5;
+            this.btnDeleteInvoice.Text = "Delete";
+            this.btnDeleteInvoice.Click += new System.EventHandler(this.btnDeleteInvoice_Click);
+            //
+            // btnCancelEdit
+            //
+            this.btnCancelEdit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancelEdit.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
+            this.btnCancelEdit.Glyph = "";
+            this.btnCancelEdit.Location = new System.Drawing.Point(644, 13);
+            this.btnCancelEdit.Name = "btnCancelEdit";
+            this.btnCancelEdit.Size = new System.Drawing.Size(104, 30);
+            this.btnCancelEdit.TabIndex = 6;
+            this.btnCancelEdit.Text = "Cancel";
+            this.btnCancelEdit.Visible = false;
+            this.btnCancelEdit.Click += new System.EventHandler(this.btnCancelEdit_Click);
             //
             // label1
             //
@@ -678,6 +725,7 @@ namespace PurchaseInvoices
             this.Name = "InvoiceForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Purchase Invoices";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InvoiceForm_FormClosing);
             this.Load += new System.EventHandler(this.InvoiceForm_Load);
             this.headerPanel.ResumeLayout(false);
             this.hostSearch.ResumeLayout(false);
@@ -748,6 +796,9 @@ namespace PurchaseInvoices
         private PurchaseInvoices.ModernButton btnAdd;
         private System.Windows.Forms.Panel topRow;
         private PurchaseInvoices.CardPanel detailsCard;
+        private PurchaseInvoices.ModernButton btnEditInvoice;
+        private PurchaseInvoices.ModernButton btnDeleteInvoice;
+        private PurchaseInvoices.ModernButton btnCancelEdit;
         private System.Windows.Forms.Label label1;
         private PurchaseInvoices.FieldHost hostTransNo;
         private System.Windows.Forms.TextBox txtTransNo;

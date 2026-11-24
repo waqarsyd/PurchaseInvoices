@@ -300,6 +300,7 @@ namespace PurchaseInvoices
             this.btnDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnDelete.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F);
             this.btnDelete.Glyph = "";
+            this.btnDelete.Kind = PurchaseInvoices.ButtonKind.Danger;
             this.btnDelete.Location = new System.Drawing.Point(24, 400);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(130, 36);
