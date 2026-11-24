@@ -230,7 +230,7 @@ namespace PurchaseInvoices
                 : $"Nothing matches \"{text}\".";
         }
 
-        private static string EscapeLike(string value)
+        internal static string EscapeLike(string value)
         {
             StringBuilder escaped = new StringBuilder();
             foreach (char c in value)

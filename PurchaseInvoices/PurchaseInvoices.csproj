@@ -54,6 +54,12 @@
     <Compile Include="InvoiceForm.Designer.cs">
       <DependentUpon>InvoiceForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="InvoiceListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InvoiceListForm.Designer.cs">
+      <DependentUpon>InvoiceListForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="InvoicePrinting.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -105,6 +111,7 @@
     <None Include="Screenshots\InvoiceForm_NewDesign_Editing.png" />
     <None Include="Screenshots\InvoiceForm_OldDesign.png" />
     <None Include="Screenshots\InvoiceForm_OldDesign_WithLabel.png" />
+    <None Include="Screenshots\InvoiceListScreen.png" />
     <None Include="Screenshots\ItemsScreen.png" />
     <None Include="Screenshots\PrintedInvoice.png" />
     <None Include="Screenshots\PrintPreviewScreen.png" />

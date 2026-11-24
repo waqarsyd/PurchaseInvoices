@@ -19,6 +19,7 @@ namespace PurchaseInvoices
     {
         SqlConnection con; //--- first step...
         private DateTime? invoiceDateValue;
+        private string invoiceTotalValue = string.Empty;
         private int? currentTransId;
         private int? editingTransId;
         private string editSnapshot = string.Empty;
@@ -37,6 +38,16 @@ namespace PurchaseInvoices
             {
                 invoiceDateValue = value;
                 summaryCard.DateText = value?.ToString("dd MMM yyyy", CultureInfo.CurrentCulture) ?? string.Empty;
+            }
+        }
+
+        private string InvoiceTotal
+        {
+            get { return invoiceTotalValue; }
+            set
+            {
+                invoiceTotalValue = value ?? string.Empty;
+                summaryCard.TotalText = invoiceTotalValue;
             }
         }
 
@@ -76,6 +87,9 @@ namespace PurchaseInvoices
                 case Keys.Control | Keys.F:
                     txtSearch.Focus();
                     txtSearch.SelectAll();
+                    return true;
+                case Keys.Control | Keys.L:
+                    btnAllInvoices.PerformClick();
                     return true;
                 case Keys.Alt | Keys.Left:
                     btnPrevious.PerformClick();
@@ -169,6 +183,39 @@ namespace PurchaseInvoices
             button1.Enabled = ready;
             btnCustomers.Enabled = ready;
             btnItems.Enabled = ready;
+            btnAllInvoices.Enabled = ready;
+        }
+        private void btnAllInvoices_Click(object sender, EventArgs e)
+        {
+            OpenInvoiceList();
+        }
+        private void OpenInvoiceList()
+        {
+            string selected;
+            using (InvoiceListForm list = new InvoiceListForm(connectionString, currentTransId != null ? txtTransNo.Text : null))
+            {
+                if (list.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                selected = list.SelectedTransNo;
+            }
+            GoToInvoice(selected);
+        }
+        private void GoToInvoice(string transNo)
+        {
+            if (string.IsNullOrEmpty(transNo) || !ConfirmDiscardInvoice())
+            {
+                return;
+            }
+            transNumbers = GetTransNumbers();
+            transNumbers.Reverse();
+            int index = transNumbers.IndexOf(transNo);
+            if (index >= 0)
+            {
+                currentIndex = index;
+            }
+            LoadRecord(transNo);
         }
         private void btnCustomers_Click(object sender, EventArgs e)
         {
@@ -318,7 +365,7 @@ namespace PurchaseInvoices
 
                             txtTransNo.Text = TRANS_NO;
                             comboCustId.SelectedIndex = comboCustId.FindStringExact(CUST_ID);
-                            txtTotalSum.Text = TOTAL_AMOUNT;
+                            InvoiceTotal = TOTAL_AMOUNT;
 
                             dgv_sales.Rows.Clear();
                             using (SqlDataReader sdrDetail = cmdDetail.ExecuteReader())
@@ -378,7 +425,7 @@ namespace PurchaseInvoices
             txtItemRate.Text = string.Empty;
             txtItemQty.Text = string.Empty;
             txtAmount.Text = string.Empty;
-            txtTotalSum.Text = string.Empty;
+            InvoiceTotal = string.Empty;
             txtSearch.Text = string.Empty;
             dgv_sales.Rows.Clear();
             setControlsReadOnnly(!true);
@@ -418,7 +465,7 @@ namespace PurchaseInvoices
                         using (SqlCommand headerCmd = new SqlCommand(headerUpdateQuery, con, transaction))
                         {
                             headerCmd.Parameters.AddWithValue("@CUST_ID", comboCustId.Text);
-                            headerCmd.Parameters.AddWithValue("@TOTAL_AMOUNT", Convert.ToDecimal(txtTotalSum.Text));
+                            headerCmd.Parameters.AddWithValue("@TOTAL_AMOUNT", Convert.ToDecimal(InvoiceTotal));
                             headerCmd.Parameters.AddWithValue("@TRANS_ID", editingTransId.Value);
                             using (SqlDataReader sdr = headerCmd.ExecuteReader())
                             {
@@ -446,7 +493,7 @@ namespace PurchaseInvoices
                         using (SqlCommand headerCmd = new SqlCommand(headerInsertQuery, con, transaction))
                         {
                             headerCmd.Parameters.AddWithValue("@CUST_ID", comboCustId.Text);
-                            headerCmd.Parameters.AddWithValue("@TOTAL_AMOUNT", Convert.ToDecimal(txtTotalSum.Text));
+                            headerCmd.Parameters.AddWithValue("@TOTAL_AMOUNT", Convert.ToDecimal(InvoiceTotal));
                             using (SqlDataReader sdr = headerCmd.ExecuteReader())
                             {
                                 sdr.Read();
@@ -583,7 +630,7 @@ namespace PurchaseInvoices
             string transNo = txtTransNo.Text;
             int lines = dgv_sales.Rows.Count;
             decimal total;
-            string totalText = decimal.TryParse(txtTotalSum.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out total) ? total.ToString("N2", CultureInfo.CurrentCulture) : txtTotalSum.Text;
+            string totalText = decimal.TryParse(InvoiceTotal, NumberStyles.Number, CultureInfo.CurrentCulture, out total) ? total.ToString("N2", CultureInfo.CurrentCulture) : InvoiceTotal;
             string question = $"Delete invoice {transNo}?\n\n{txtcustname.Text}  ·  {lines} {(lines == 1 ? "line" : "lines")}  ·  total {totalText}\n\nThis can't be undone.";
             if (MessageBox.Show(question, "Delete invoice", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
             {
@@ -646,7 +693,7 @@ namespace PurchaseInvoices
             txtItemRate.Text = string.Empty;
             txtItemQty.Text = string.Empty;
             txtAmount.Text = string.Empty;
-            txtTotalSum.Text = string.Empty;
+            InvoiceTotal = string.Empty;
             dgv_sales.Rows.Clear();
             setControlsReadOnnly(true);
         }
@@ -879,7 +926,7 @@ namespace PurchaseInvoices
                     totalTxtAmout += cellValue;
                 }
             }
-            txtTotalSum.Text = totalTxtAmout.ToString();
+            InvoiceTotal = totalTxtAmout.ToString();
         }
 
         private void dgv_sales_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -952,7 +999,7 @@ namespace PurchaseInvoices
 
             if (string.IsNullOrEmpty(searchInvoiceNum))
             {
-                MessageBox.Show("Please enter an invoice number for search.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                OpenInvoiceList();
                 return;
             }
 
@@ -1049,7 +1096,7 @@ namespace PurchaseInvoices
                     amount));
             }
             decimal total;
-            data.Total = decimal.TryParse(txtTotalSum.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out total) ? total : sum;
+            data.Total = decimal.TryParse(InvoiceTotal, NumberStyles.Number, CultureInfo.CurrentCulture, out total) ? total : sum;
             return data;
         }
         private static decimal ParseAmount(object value)

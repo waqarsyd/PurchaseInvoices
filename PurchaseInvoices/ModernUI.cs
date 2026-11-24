@@ -908,6 +908,14 @@ namespace PurchaseInvoices
         private DataGridView itemsSource;
         private Control modeSource;
         private string dateText = string.Empty;
+        private string totalText = string.Empty;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string TotalText
+        {
+            get { return totalText; }
+            set { totalText = value ?? string.Empty; Invalidate(); }
+        }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string DateText
@@ -1057,7 +1065,7 @@ namespace PurchaseInvoices
                 }
             }
 
-            string value = FormatAmount(totalSource?.Text);
+            string value = FormatAmount(totalSource != null ? totalSource.Text : totalText);
             int available = right - left;
             float points = 26f;
             Font valueFont = new Font("Segoe UI Semibold", points);
