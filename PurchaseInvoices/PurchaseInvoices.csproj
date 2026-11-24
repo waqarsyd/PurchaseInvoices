@@ -56,6 +56,13 @@
     <Compile Include="ActivityForm.Designer.cs">
       <DependentUpon>ActivityForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Backup.cs" />
+    <Compile Include="BackupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BackupForm.Designer.cs">
+      <DependentUpon>BackupForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ChangePasswordForm.cs">
       <SubType>Form</SubType>
     </Compile>

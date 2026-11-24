@@ -29,6 +29,7 @@ namespace PurchaseInvoices
         private ToolStripMenuItem mnuCompany;
         private ToolStripMenuItem mnuUsers;
         private ToolStripMenuItem mnuActivity;
+        private ToolStripMenuItem mnuBackup;
         private ToolStripMenuItem mnuDatabase;
         private ToolStripSeparator mnuAdminSeparator;
         private ToolStripMenuItem mnuChangePassword;
@@ -55,6 +56,7 @@ namespace PurchaseInvoices
             mnuCompany = ModernMenuRenderer.Item("Company profile", "\uE80F", (s, e) => OpenCompanyProfile());
             mnuUsers = ModernMenuRenderer.Item("Users", "\uE716", (s, e) => OpenUsers());
             mnuActivity = ModernMenuRenderer.Item("Activity log", "\uE81C", (s, e) => OpenActivity());
+            mnuBackup = ModernMenuRenderer.Item("Backup and restore", "\uEA18", (s, e) => OpenBackup());
             mnuDatabase = ModernMenuRenderer.Item("Database", "\uE713", (s, e) => OpenDatabaseSettings());
             mnuAdminSeparator = new ToolStripSeparator();
             mnuChangePassword = ModernMenuRenderer.Item("Change password", "\uE8D7", (s, e) => ChangePassword());
@@ -62,7 +64,7 @@ namespace PurchaseInvoices
             accountMenu.Items.AddRange(new ToolStripItem[]
             {
                 mnuName, mnuRole, new ToolStripSeparator(),
-                mnuCompany, mnuUsers, mnuActivity, mnuDatabase, mnuAdminSeparator,
+                mnuCompany, mnuUsers, mnuActivity, mnuBackup, mnuDatabase, mnuAdminSeparator,
                 mnuChangePassword, new ToolStripSeparator(), mnuSignOut,
             });
             components.Add(accountMenu);
@@ -79,6 +81,7 @@ namespace PurchaseInvoices
             mnuCompany.Available = admin;
             mnuUsers.Available = admin;
             mnuActivity.Available = admin;
+            mnuBackup.Available = admin;
             mnuDatabase.Available = admin;
             mnuAdminSeparator.Available = admin;
             mnuChangePassword.Available = user != null;
@@ -138,6 +141,26 @@ namespace PurchaseInvoices
                 {
                     LoadCompany();
                 }
+            }
+        }
+
+        private void OpenBackup()
+        {
+            if (!Session.IsAdmin || !ConfirmDiscardInvoice())
+            {
+                return;
+            }
+            bool restored;
+            using (BackupForm backup = new BackupForm(connectionString))
+            {
+                backup.ShowDialog(this);
+                restored = backup.Restored;
+            }
+            if (restored)
+            {
+                SignOutRequested = true;
+                closeConfirmed = true;
+                Close();
             }
         }
 
@@ -347,6 +370,7 @@ namespace PurchaseInvoices
             mnuCompany.Enabled = ready;
             mnuUsers.Enabled = ready;
             mnuActivity.Enabled = ready;
+            mnuBackup.Enabled = ready;
             mnuChangePassword.Enabled = ready;
         }
         private void btnAllInvoices_Click(object sender, EventArgs e)
