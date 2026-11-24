@@ -32,6 +32,8 @@ namespace PurchaseInvoices
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            this.components = new System.ComponentModel.Container();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.headerPanel = new PurchaseInvoices.HeaderPanel();
             this.hostSearch = new PurchaseInvoices.FieldHost();
             this.txtSearch = new System.Windows.Forms.TextBox();
@@ -631,6 +633,7 @@ namespace PurchaseInvoices
             this.comboCustId.Location = new System.Drawing.Point(184, 68);
             this.comboCustId.Name = "comboCustId";
             this.comboCustId.Placeholder = "Select customer";
+            this.comboCustId.ShowDescriptionInFace = false;
             this.comboCustId.Size = new System.Drawing.Size(204, 36);
             this.comboCustId.TabIndex = 1;
             this.comboCustId.SelectedIndexChanged += new System.EventHandler(this.comboCustId_SelectedIndexChanged);
@@ -725,6 +728,19 @@ namespace PurchaseInvoices
             this.Name = "InvoiceForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Purchase Invoices";
+            this.toolTip.SetToolTip(this.btnSave, "Save this invoice (Ctrl+S)");
+            this.toolTip.SetToolTip(this.btnNew, "Start a new invoice (Ctrl+N)");
+            this.toolTip.SetToolTip(this.btnPrint, "Preview and print this invoice (Ctrl+P)");
+            this.toolTip.SetToolTip(this.btnEditInvoice, "Edit this invoice (Ctrl+E)");
+            this.toolTip.SetToolTip(this.btnDeleteInvoice, "Delete this invoice");
+            this.toolTip.SetToolTip(this.btnCancelEdit, "Discard the changes and stop editing");
+            this.toolTip.SetToolTip(this.btnPrevious, "Older invoice (Alt+Left)");
+            this.toolTip.SetToolTip(this.btnNext, "Newer invoice (Alt+Right)");
+            this.toolTip.SetToolTip(this.button1, "Find an invoice by number (Enter in the search box, Ctrl+F to jump there)");
+            this.toolTip.SetToolTip(this.btnAdd, "Add this item to the invoice (Enter in Quantity)");
+            this.toolTip.SetToolTip(this.btnCustomers, "Add, edit and remove customers");
+            this.toolTip.SetToolTip(this.btnItems, "Add, edit and remove items and prices");
+            this.toolTip.SetToolTip(this.btnCreateTables, "Create the database tables if any are missing");
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InvoiceForm_FormClosing);
             this.Load += new System.EventHandler(this.InvoiceForm_Load);
             this.headerPanel.ResumeLayout(false);
@@ -758,6 +774,7 @@ namespace PurchaseInvoices
 
         #endregion
 
+        private System.Windows.Forms.ToolTip toolTip;
         private PurchaseInvoices.HeaderPanel headerPanel;
         private PurchaseInvoices.FieldHost hostSearch;
         private System.Windows.Forms.TextBox txtSearch;

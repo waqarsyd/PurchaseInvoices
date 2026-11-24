@@ -18,7 +18,7 @@ namespace PurchaseInvoices
     public partial class InvoiceForm : Form
     {
         SqlConnection con; //--- first step...
-        private DateTime? invoiceDate;
+        private DateTime? invoiceDateValue;
         private int? currentTransId;
         private int? editingTransId;
         private string editSnapshot = string.Empty;
@@ -27,6 +27,64 @@ namespace PurchaseInvoices
         {
             InitializeComponent();
             Theme.StyleWindow(this);
+            comboCustId.DropDownWidth = Theme.S(380);
+        }
+
+        private DateTime? InvoiceDate
+        {
+            get { return invoiceDateValue; }
+            set
+            {
+                invoiceDateValue = value;
+                summaryCard.DateText = value?.ToString("dd MMM yyyy", CultureInfo.CurrentCulture) ?? string.Empty;
+            }
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            switch (keyData)
+            {
+                case Keys.Enter:
+                    if (ActiveControl == txtItemQty)
+                    {
+                        int before = dgv_sales.Rows.Count;
+                        btnAdd.PerformClick();
+                        if (dgv_sales.Rows.Count > before)
+                        {
+                            combo_Itemcode.Focus();
+                        }
+                        return true;
+                    }
+                    if (ActiveControl == txtSearch)
+                    {
+                        button1.PerformClick();
+                        return true;
+                    }
+                    break;
+                case Keys.Control | Keys.S:
+                    btnSave.PerformClick();
+                    return true;
+                case Keys.Control | Keys.N:
+                    btnNew.PerformClick();
+                    return true;
+                case Keys.Control | Keys.P:
+                    btnPrint.PerformClick();
+                    return true;
+                case Keys.Control | Keys.E:
+                    btnEditInvoice.PerformClick();
+                    return true;
+                case Keys.Control | Keys.F:
+                    txtSearch.Focus();
+                    txtSearch.SelectAll();
+                    return true;
+                case Keys.Alt | Keys.Left:
+                    btnPrevious.PerformClick();
+                    return true;
+                case Keys.Alt | Keys.Right:
+                    btnNext.PerformClick();
+                    return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
 
@@ -254,7 +312,7 @@ namespace PurchaseInvoices
                             string TRANS_NO = sdrHeader["TRANS_NO"].ToString();
                             string CUST_ID = sdrHeader["CUST_ID"].ToString();
                             string TOTAL_AMOUNT = sdrHeader["TOTAL_AMOUNT"].ToString();
-                            invoiceDate = sdrHeader["TRANS_DATE"] as DateTime?;
+                            InvoiceDate = sdrHeader["TRANS_DATE"] as DateTime?;
                             currentTransId = Convert.ToInt32(sdrHeader["TRANS_ID"]);
                             editingTransId = null;
 
@@ -312,7 +370,7 @@ namespace PurchaseInvoices
             object result = cmd.ExecuteScalar();
             txtTransNo.Text = result.ToString();
             con.Close();
-            invoiceDate = null;
+            InvoiceDate = null;
             comboCustId.SelectedIndex = -1;
             txtcustname.Text = string.Empty;
             txtcustaddresss.Text = string.Empty;
@@ -370,7 +428,7 @@ namespace PurchaseInvoices
                                 }
                                 lastTransId = Convert.ToInt32(sdr["TRANS_ID"]);
                                 savedTransNo = sdr["TRANS_NO"].ToString();
-                                invoiceDate = sdr["TRANS_DATE"] as DateTime?;
+                                InvoiceDate = sdr["TRANS_DATE"] as DateTime?;
                             }
                         }
                         using (SqlCommand clearCmd = new SqlCommand("delete from PURCH_DETAIL where TRANS_ID = @TRANS_ID", con, transaction))
@@ -394,7 +452,7 @@ namespace PurchaseInvoices
                                 sdr.Read();
                                 lastTransId = Convert.ToInt32(sdr["TRANS_ID"]);
                                 savedTransNo = sdr["TRANS_NO"].ToString();
-                                invoiceDate = sdr["TRANS_DATE"] as DateTime?;
+                                InvoiceDate = sdr["TRANS_DATE"] as DateTime?;
                             }
                         }
                     }
@@ -579,7 +637,7 @@ namespace PurchaseInvoices
         {
             currentTransId = null;
             editingTransId = null;
-            invoiceDate = null;
+            InvoiceDate = null;
             txtTransNo.Text = string.Empty;
             comboCustId.SelectedIndex = -1;
             txtcustname.Text = string.Empty;
@@ -628,12 +686,15 @@ namespace PurchaseInvoices
             SqlCommand cmd = new SqlCommand(qry, con);
             con.Open();
             SqlDataReader dr = cmd.ExecuteReader();
+            Dictionary<string, string> names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             while (dr.Read())
             {
                 string CUSTID = dr.GetString(0);
                 comboCustId.Items.Add(CUSTID);
+                names[CUSTID] = dr["CUST_NAME"].ToString();
             }
             con.Close();
+            comboCustId.Descriptions = names;
         }
         private void comboCustId_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -660,9 +721,12 @@ namespace PurchaseInvoices
             SqlCommand cmd = new SqlCommand(qry, con);
             con.Open();
             SqlDataReader sdr = cmd.ExecuteReader();
+            Dictionary<string, string> descriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            combo_Itemcode.Descriptions = descriptions;
             while (sdr.Read())
             {
                 string itmcode = sdr.GetString(0);
+                descriptions[itmcode] = sdr["ITEM_DESCRIPTION"].ToString();
                 combo_Itemcode.Items.Add(itmcode);
             }
             con.Close();
@@ -692,7 +756,8 @@ namespace PurchaseInvoices
             sda.Fill(data);
             if (data.Rows.Count > 0)
             {
-                txtItemRate.Text = data.Rows[0]["ITEM_COST"].ToString();
+                object cost = data.Rows[0]["ITEM_COST"];
+                txtItemRate.Text = cost == DBNull.Value ? string.Empty : Convert.ToDecimal(cost).ToString("N2", CultureInfo.CurrentCulture);
             }
             con.Close();
             txtItemQty.Text = string.Empty;
@@ -964,7 +1029,7 @@ namespace PurchaseInvoices
             InvoicePrintData data = new InvoicePrintData
             {
                 InvoiceNo = txtTransNo.Text.Trim(),
-                Date = invoiceDate ?? DateTime.Now,
+                Date = InvoiceDate ?? DateTime.Now,
                 IsDraft = draft,
                 CustomerId = comboCustId.SelectedItem?.ToString() ?? string.Empty,
                 CustomerName = txtcustname.Text.Trim(),

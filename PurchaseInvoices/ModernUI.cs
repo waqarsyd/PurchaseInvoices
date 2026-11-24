@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -569,6 +570,47 @@ namespace PurchaseInvoices
         private const int WM_PAINT = 0x000F;
         private bool hovering;
         private string placeholder = "Select…";
+        private IDictionary<string, string> descriptions;
+        private bool showDescriptionInFace = true;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public IDictionary<string, string> Descriptions
+        {
+            get { return descriptions; }
+            set { descriptions = value; Invalidate(); }
+        }
+
+        [DefaultValue(true)]
+        public bool ShowDescriptionInFace
+        {
+            get { return showDescriptionInFace; }
+            set { showDescriptionInFace = value; Invalidate(); }
+        }
+
+        private string DescriptionOf(string text)
+        {
+            string description;
+            return descriptions != null && text != null && descriptions.TryGetValue(text, out description) ? description : null;
+        }
+
+        private void DrawItemText(Graphics g, string text, Rectangle bounds, Color main, Color secondary, bool withDescription)
+        {
+            const TextFormatFlags flags = TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding;
+            string description = withDescription ? DescriptionOf(text) : null;
+            if (string.IsNullOrEmpty(description))
+            {
+                TextRenderer.DrawText(g, text, Font, bounds, main, flags | TextFormatFlags.EndEllipsis);
+                return;
+            }
+            int codeWidth = TextRenderer.MeasureText(g, text, Font, Size.Empty, flags).Width;
+            TextRenderer.DrawText(g, text, Font, new Rectangle(bounds.X, bounds.Y, Math.Min(codeWidth + 2, bounds.Width), bounds.Height), main, flags);
+            int gap = Theme.S(12);
+            Rectangle rest = new Rectangle(bounds.X + codeWidth + gap, bounds.Y, bounds.Width - codeWidth - gap, bounds.Height);
+            if (rest.Width > Theme.S(24))
+            {
+                TextRenderer.DrawText(g, description, Font, rest, secondary, flags | TextFormatFlags.EndEllipsis);
+            }
+        }
 
         public ModernComboBox()
         {
@@ -622,8 +664,8 @@ namespace PurchaseInvoices
                 e.Graphics.FillRectangle(brush, e.Bounds);
             }
             Rectangle textBounds = new Rectangle(e.Bounds.X + Theme.S(12), e.Bounds.Y, e.Bounds.Width - Theme.S(16), e.Bounds.Height);
-            TextRenderer.DrawText(e.Graphics, GetItemText(Items[e.Index]), Font, textBounds, selected ? Theme.AccentText : Theme.Text,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+            DrawItemText(e.Graphics, GetItemText(Items[e.Index]), textBounds, selected ? Theme.AccentText : Theme.Text,
+                selected ? Color.FromArgb(99, 102, 241) : Theme.TextMuted, true);
         }
 
         protected override void WndProc(ref Message m)
@@ -671,8 +713,15 @@ namespace PurchaseInvoices
                 string text = hasValue ? GetItemText(SelectedItem) : readOnly ? string.Empty : placeholder;
                 int arrowWidth = readOnly ? 0 : Theme.S(30);
                 Rectangle textBounds = new Rectangle(Theme.S(12), 0, bounds.Width - Theme.S(12) - arrowWidth - Theme.S(4), bounds.Height);
-                TextRenderer.DrawText(bg, text, Font, textBounds, hasValue ? Theme.Text : Theme.TextFaint,
-                    TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+                if (hasValue)
+                {
+                    DrawItemText(bg, text, textBounds, Theme.Text, Theme.TextMuted, showDescriptionInFace);
+                }
+                else
+                {
+                    TextRenderer.DrawText(bg, text, Font, textBounds, Theme.TextFaint,
+                        TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
+                }
 
                 if (!readOnly)
                 {
@@ -858,6 +907,14 @@ namespace PurchaseInvoices
         private TextBox customerSource;
         private DataGridView itemsSource;
         private Control modeSource;
+        private string dateText = string.Empty;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string DateText
+        {
+            get { return dateText; }
+            set { dateText = value ?? string.Empty; Invalidate(); }
+        }
 
         public SummaryCard()
         {
@@ -1035,7 +1092,7 @@ namespace PurchaseInvoices
             int items = itemsSource?.Rows.Count ?? 0;
             string invoice = invoiceSource?.Text.Trim() ?? string.Empty;
             string footer = invoice.Length > 0
-                ? $"Invoice #{invoice}   ·   {items} {(items == 1 ? "item" : "items")}"
+                ? $"Invoice #{invoice}  ·  {(dateText.Length > 0 ? dateText : "Not saved yet")}  ·  {items} {(items == 1 ? "item" : "items")}"
                 : "No invoice loaded";
             using (Font footerFont = new Font("Segoe UI", 9f))
             {
