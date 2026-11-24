@@ -26,6 +26,7 @@ namespace PurchaseInvoices
         private ContextMenuStrip accountMenu;
         private ToolStripLabel mnuName;
         private ToolStripLabel mnuRole;
+        private ToolStripMenuItem mnuCompany;
         private ToolStripMenuItem mnuUsers;
         private ToolStripMenuItem mnuActivity;
         private ToolStripMenuItem mnuDatabase;
@@ -33,6 +34,7 @@ namespace PurchaseInvoices
         private ToolStripMenuItem mnuChangePassword;
         private ToolStripMenuItem mnuSignOut;
         private bool closeConfirmed;
+        private CompanyProfile company = new CompanyProfile();
 
         public InvoiceForm()
         {
@@ -50,6 +52,7 @@ namespace PurchaseInvoices
             accountMenu = ModernMenuRenderer.CreateMenu();
             mnuName = new ToolStripLabel { Font = new Font("Segoe UI Semibold", 10f), ForeColor = Theme.Text, Padding = new Padding(Theme.S(2), Theme.S(6), Theme.S(2), 0) };
             mnuRole = new ToolStripLabel { ForeColor = Theme.TextMuted, Padding = new Padding(Theme.S(2), 0, Theme.S(2), Theme.S(4)) };
+            mnuCompany = ModernMenuRenderer.Item("Company profile", "\uE80F", (s, e) => OpenCompanyProfile());
             mnuUsers = ModernMenuRenderer.Item("Users", "\uE716", (s, e) => OpenUsers());
             mnuActivity = ModernMenuRenderer.Item("Activity log", "\uE81C", (s, e) => OpenActivity());
             mnuDatabase = ModernMenuRenderer.Item("Database", "\uE713", (s, e) => OpenDatabaseSettings());
@@ -59,7 +62,7 @@ namespace PurchaseInvoices
             accountMenu.Items.AddRange(new ToolStripItem[]
             {
                 mnuName, mnuRole, new ToolStripSeparator(),
-                mnuUsers, mnuActivity, mnuDatabase, mnuAdminSeparator,
+                mnuCompany, mnuUsers, mnuActivity, mnuDatabase, mnuAdminSeparator,
                 mnuChangePassword, new ToolStripSeparator(), mnuSignOut,
             });
             components.Add(accountMenu);
@@ -73,6 +76,7 @@ namespace PurchaseInvoices
             mnuName.Text = user?.DisplayName ?? "Not signed in";
             mnuRole.Text = user == null ? string.Empty : $"{user.RoleName}  ·  {user.UserName}";
             bool admin = Session.IsAdmin;
+            mnuCompany.Available = admin;
             mnuUsers.Available = admin;
             mnuActivity.Available = admin;
             mnuDatabase.Available = admin;
@@ -101,6 +105,34 @@ namespace PurchaseInvoices
                 if (users.CurrentUserChanged)
                 {
                     UpdateAccount();
+                }
+            }
+        }
+
+        private void LoadCompany()
+        {
+            try
+            {
+                company = new AccountRepository(connectionString).GetCompanyProfile();
+            }
+            catch (Exception ex) when (ex is System.Data.Common.DbException || ex is InvalidOperationException || ex is ArgumentException)
+            {
+                company = new CompanyProfile();
+            }
+            headerPanel.Subtitle = string.IsNullOrWhiteSpace(company.Name) ? "Create, find and print purchase invoices" : company.Name.Trim();
+        }
+
+        private void OpenCompanyProfile()
+        {
+            if (!Session.IsAdmin)
+            {
+                return;
+            }
+            using (CompanyForm profile = new CompanyForm(connectionString))
+            {
+                if (profile.ShowDialog(this) == DialogResult.OK)
+                {
+                    LoadCompany();
                 }
             }
         }
@@ -283,6 +315,7 @@ namespace PurchaseInvoices
                 cboItem.Items.Clear();
                 LoadCustomers(); // whene ever we have to called any method we can called it over here in from load form
                 LoadItems();
+                LoadCompany();
                 SetDatabaseReady(true);
                 currentIndex = 0;
                 transNumbers = GetTransNumbers();
@@ -304,6 +337,7 @@ namespace PurchaseInvoices
             btnItems.Enabled = ready;
             btnAllInvoices.Enabled = ready;
             btnReports.Enabled = ready;
+            mnuCompany.Enabled = ready;
             mnuUsers.Enabled = ready;
             mnuActivity.Enabled = ready;
             mnuChangePassword.Enabled = ready;
@@ -1073,6 +1107,8 @@ namespace PurchaseInvoices
                 CustomerId = cboCustomer.SelectedItem?.ToString() ?? string.Empty,
                 CustomerName = txtCustomerName.Text.Trim(),
                 CustomerAddress = txtCustomerAddress.Text.Trim(),
+                Company = company,
+                PrintedBy = Session.Current?.DisplayName ?? string.Empty,
             };
             decimal sum = 0;
             foreach (DataGridViewRow row in dgvLines.Rows)

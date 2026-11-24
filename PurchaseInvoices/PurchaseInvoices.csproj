@@ -75,6 +75,12 @@
     <Compile Include="UsersForm.Designer.cs">
       <DependentUpon>UsersForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="CompanyForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CompanyForm.Designer.cs">
+      <DependentUpon>CompanyForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConnectionSettings.cs" />
     <Compile Include="CsvExport.cs" />
     <Compile Include="DatabaseSettingsForm.cs">

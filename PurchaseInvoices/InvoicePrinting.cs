@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Drawing.Text;
 using System.Globalization;
+using System.Linq;
 
 namespace PurchaseInvoices
 {
@@ -37,6 +38,8 @@ namespace PurchaseInvoices
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerAddress { get; set; } = string.Empty;
         public decimal Total { get; set; }
+        public CompanyProfile Company { get; set; } = new CompanyProfile();
+        public string PrintedBy { get; set; } = string.Empty;
         public List<InvoicePrintLine> Lines { get; } = new List<InvoicePrintLine>();
     }
 
@@ -56,6 +59,8 @@ namespace PurchaseInvoices
 
         private readonly InvoicePrintData data;
         private readonly Font titleFont = new Font("Segoe UI Semibold", 20f);
+        private readonly Font sideTitleFont = new Font("Segoe UI Semibold", 15f);
+        private readonly Font companyFont = new Font("Segoe UI Semibold", 14f);
         private readonly Font headingFont = new Font("Segoe UI Semibold", 12f);
         private readonly Font metaValueFont = new Font("Segoe UI Semibold", 12.5f);
         private readonly Font labelFont = new Font("Segoe UI Semibold", 7.5f);
@@ -160,14 +165,39 @@ namespace PurchaseInvoices
             using (SolidBrush text = new SolidBrush(Theme.Text))
             using (SolidBrush muted = new SolidBrush(Theme.TextMuted))
             {
-                g.DrawString("PURCHASE INVOICE", titleFont, text, area.Left - 2f, top + 24f);
-                if (data.IsDraft)
+                string invoiceNo = data.InvoiceNo.Length > 0 ? data.InvoiceNo : "—";
+                string date = data.Date.ToString("dd MMM yyyy", CultureInfo.CurrentCulture);
+                if (HasCompany)
                 {
-                    DrawBadge(g, "DRAFT · NOT SAVED", area.Left, top + 72f);
+                    DrawCompany(g, area, top + 22f);
+                    using (StringFormat right = SingleLine(StringAlignment.Far))
+                    {
+                        g.DrawString("PURCHASE INVOICE", sideTitleFont, text, new RectangleF(area.Right - 320f, top + 20f, 320f, 30f), right);
+                    }
+                    DrawMeta(g, "DATE", date, area.Right, top + 62f);
+                    DrawMeta(g, "INVOICE NO.", invoiceNo, area.Right - 150f, top + 62f);
+                    if (data.IsDraft)
+                    {
+                        const string badge = "DRAFT · NOT SAVED";
+                        float titleWidth;
+                        using (StringFormat measure = new StringFormat(StringFormat.GenericTypographic))
+                        {
+                            titleWidth = g.MeasureString("PURCHASE INVOICE", sideTitleFont, PointF.Empty, measure).Width;
+                        }
+                        float badgeWidth = g.MeasureString(badge, labelFont).Width + 18f;
+                        DrawBadge(g, badge, area.Right - titleWidth - badgeWidth - 14f, top + 25f);
+                    }
                 }
-
-                DrawMeta(g, "INVOICE NO.", data.InvoiceNo.Length > 0 ? data.InvoiceNo : "—", area.Right, top + 24f);
-                DrawMeta(g, "DATE", data.Date.ToString("dd MMM yyyy", CultureInfo.CurrentCulture), area.Right, top + 70f);
+                else
+                {
+                    g.DrawString("PURCHASE INVOICE", titleFont, text, area.Left - 2f, top + 24f);
+                    if (data.IsDraft)
+                    {
+                        DrawBadge(g, "DRAFT · NOT SAVED", area.Left, top + 72f);
+                    }
+                    DrawMeta(g, "INVOICE NO.", invoiceNo, area.Right, top + 24f);
+                    DrawMeta(g, "DATE", date, area.Right, top + 70f);
+                }
 
                 using (Pen divider = new Pen(Theme.Border, 1.5f))
                 {
@@ -192,6 +222,49 @@ namespace PurchaseInvoices
             return top + FirstHeaderHeight;
         }
 
+        private bool HasCompany => !string.IsNullOrWhiteSpace(data.Company?.Name);
+
+        private void DrawCompany(Graphics g, RectangleF area, float y)
+        {
+            float logo = 46f;
+            InterpolationMode interpolation = g.InterpolationMode;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.DrawImage(Theme.Logo, area.Left, y, logo, logo);
+            g.InterpolationMode = interpolation;
+
+            float x = area.Left + logo + 12f;
+            float width = area.Width * 0.58f - logo - 12f;
+            CompanyProfile company = data.Company;
+            using (SolidBrush text = new SolidBrush(Theme.Text))
+            using (SolidBrush muted = new SolidBrush(Theme.TextMuted))
+            using (StringFormat left = SingleLine(StringAlignment.Near))
+            {
+                g.DrawString(company.Name.Trim(), companyFont, text, new RectangleF(x, y - 2f, width, 26f), left);
+                float line = y + 26f;
+                List<string> details = new List<string>();
+                if (!string.IsNullOrWhiteSpace(company.Address))
+                {
+                    details.Add(OneLine(company.Address));
+                }
+                string contact = string.Join("  ·  ", new[] { company.Phone, company.Email }.Where(v => !string.IsNullOrWhiteSpace(v)).Select(v => v.Trim()));
+                if (contact.Length > 0)
+                {
+                    details.Add(contact);
+                }
+                if (!string.IsNullOrWhiteSpace(company.TaxNumber))
+                {
+                    details.Add("Tax no. " + company.TaxNumber.Trim());
+                }
+                foreach (string detail in details.Take(3))
+                {
+                    g.DrawString(detail, smallFont, muted, new RectangleF(x, line, width, 16f), left);
+                    line += 16f;
+                }
+            }
+        }
+
+        private static string OneLine(string value) => string.Join(", ", value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).Where(s => s.Length > 0));
+
         private float DrawContinuedHeader(Graphics g, RectangleF area)
         {
             float top = area.Top;
@@ -201,6 +274,10 @@ namespace PurchaseInvoices
             using (StringFormat right = SingleLine(StringAlignment.Far))
             {
                 string title = data.InvoiceNo.Length > 0 ? "Purchase invoice " + data.InvoiceNo + " (continued)" : "Purchase invoice (continued)";
+                if (HasCompany)
+                {
+                    title = data.Company.Name.Trim() + "  ·  " + title;
+                }
                 g.DrawString(title, headingFont, text, area.Left, top + 16f);
                 g.DrawString(data.Date.ToString("dd MMM yyyy", CultureInfo.CurrentCulture), bodyFont, muted, new RectangleF(area.Left, top + 18f, area.Width, 20f), right);
             }
@@ -283,7 +360,12 @@ namespace PurchaseInvoices
             using (StringFormat rightFormat = SingleLine(StringAlignment.Far))
             {
                 RectangleF line = new RectangleF(area.Left, y + 6f, area.Width, 18f);
-                g.DrawString("Printed " + printedAt.ToString("dd MMM yyyy, h:mm tt", CultureInfo.CurrentCulture), smallFont, muted, line, leftFormat);
+                string printed = "Printed " + printedAt.ToString("dd MMM yyyy, h:mm tt", CultureInfo.CurrentCulture);
+                if (!string.IsNullOrWhiteSpace(data.PrintedBy))
+                {
+                    printed += " by " + data.PrintedBy.Trim();
+                }
+                g.DrawString(printed, smallFont, muted, line, leftFormat);
                 g.DrawString($"Page {pageIndex + 1} of {plan.Count}", smallFont, muted, line, rightFormat);
             }
         }
@@ -355,6 +437,8 @@ namespace PurchaseInvoices
             if (disposing)
             {
                 titleFont.Dispose();
+                sideTitleFont.Dispose();
+                companyFont.Dispose();
                 headingFont.Dispose();
                 metaValueFont.Dispose();
                 labelFont.Dispose();
