@@ -54,6 +54,15 @@
     <Compile Include="InvoiceForm.Designer.cs">
       <DependentUpon>InvoiceForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="InvoicePrinting.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PrintPreviewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PrintPreviewForm.Designer.cs">
+      <DependentUpon>PrintPreviewForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MasterForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -97,6 +106,8 @@
     <None Include="Screenshots\InvoiceForm_OldDesign.png" />
     <None Include="Screenshots\InvoiceForm_OldDesign_WithLabel.png" />
     <None Include="Screenshots\ItemsScreen.png" />
+    <None Include="Screenshots\PrintedInvoice.png" />
+    <None Include="Screenshots\PrintPreviewScreen.png" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

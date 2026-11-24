@@ -18,15 +18,12 @@ namespace PurchaseInvoices
     public partial class InvoiceForm : Form
     {
         SqlConnection con; //--- first step...
-        private PrintDocument printDocument = new PrintDocument();
+        private DateTime? invoiceDate;
 
         public InvoiceForm()
         {
             InitializeComponent();
             Theme.StyleWindow(this);
-
-            printDocument.BeginPrint += new PrintEventHandler(printDocument_BeginPrint);
-            printDocument.PrintPage += new PrintPageEventHandler(printDocument_PrintPage);
         }
 
 
@@ -253,6 +250,7 @@ namespace PurchaseInvoices
                             string TRANS_NO = sdrHeader["TRANS_NO"].ToString();
                             string CUST_ID = sdrHeader["CUST_ID"].ToString();
                             string TOTAL_AMOUNT = sdrHeader["TOTAL_AMOUNT"].ToString();
+                            invoiceDate = sdrHeader["TRANS_DATE"] as DateTime?;
 
                             txtTransNo.Text = TRANS_NO;
                             comboCustId.SelectedIndex = comboCustId.FindStringExact(CUST_ID);
@@ -300,6 +298,7 @@ namespace PurchaseInvoices
             object result = cmd.ExecuteScalar();
             txtTransNo.Text = result.ToString();
             con.Close();
+            invoiceDate = null;
             comboCustId.SelectedIndex = -1;
             txtcustname.Text = string.Empty;
             txtcustaddresss.Text = string.Empty;
@@ -338,7 +337,7 @@ namespace PurchaseInvoices
                 {
                     string headerInsertQuery = "insert into PURCH_HEADER (TRANS_DATE, TRANS_NO, CUST_ID, TOTAL_AMOUNT) ";
                     headerInsertQuery += "select GETDATE(), isnull(max(TRANS_NO),0) + 1, @CUST_ID, @TOTAL_AMOUNT from PURCH_HEADER with (updlock, holdlock); ";
-                    headerInsertQuery += "select TRANS_ID, TRANS_NO from PURCH_HEADER where TRANS_ID = SCOPE_IDENTITY();";
+                    headerInsertQuery += "select TRANS_ID, TRANS_NO, TRANS_DATE from PURCH_HEADER where TRANS_ID = SCOPE_IDENTITY();";
 
                     int lastTransId;
                     using (SqlCommand headerCmd = new SqlCommand(headerInsertQuery, con, transaction))
@@ -350,6 +349,7 @@ namespace PurchaseInvoices
                             sdr.Read();
                             lastTransId = Convert.ToInt32(sdr["TRANS_ID"]);
                             savedTransNo = sdr["TRANS_NO"].ToString();
+                            invoiceDate = sdr["TRANS_DATE"] as DateTime?;
                         }
                     }
 
@@ -725,64 +725,61 @@ namespace PurchaseInvoices
                 MessageBox.Show("No more records available.", "Navigation", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        private int printRowIndex;
-        private void printDocument_BeginPrint(object sender, PrintEventArgs e)
-        {
-            printRowIndex = 0;
-        }
-        private void printDocument_PrintPage(object sender, PrintPageEventArgs e)
-        {
-            DataGridViewRowCollection rows = dgv_sales.Rows;
-            int y = 50;
-            int firstRowOnPage = printRowIndex;
-            using (Font headerFont = new Font("Arial", 12, FontStyle.Bold))
-            using (Font rowFont = new Font("Arial", 12))
-            {
-                e.Graphics.DrawString("SLNO", headerFont, Brushes.Black, new PointF(40, y));
-                e.Graphics.DrawString("ITEM CODE", headerFont, Brushes.Black, new PointF(120, y));
-                e.Graphics.DrawString("ITEM DESCRIPTION", headerFont, Brushes.Black, new PointF(290, y));
-                e.Graphics.DrawString("QTY", headerFont, Brushes.Black, new PointF(550, y));
-                e.Graphics.DrawString("RATE", headerFont, Brushes.Black, new PointF(620, y));
-                e.Graphics.DrawString("AMOUNT", headerFont, Brushes.Black, new PointF(700, y));
-
-                y += 35;
-
-                while (printRowIndex < rows.Count && (y + 20 <= e.MarginBounds.Bottom || printRowIndex == firstRowOnPage))
-                {
-                    DataGridViewRow row = rows[printRowIndex];
-
-                    e.Graphics.DrawString(row.Cells[0].Value.ToString(), rowFont, Brushes.Black, new PointF(50, y));
-
-                    e.Graphics.DrawString(row.Cells[1].Value.ToString(), rowFont, Brushes.Black, new PointF(130, y));
-
-                    e.Graphics.DrawString(row.Cells[2].Value.ToString(), rowFont, Brushes.Black, new PointF(255, y));
-
-                    e.Graphics.DrawString(row.Cells[3].Value.ToString(), rowFont, Brushes.Black, new PointF(552, y));
-
-                    e.Graphics.DrawString(row.Cells[4].Value.ToString(), rowFont, Brushes.Black, new PointF(620, y));
-
-                    e.Graphics.DrawString(row.Cells[5].Value.ToString(), rowFont, Brushes.Black, new PointF(700, y));
-
-                    y += 20;
-                    printRowIndex++;
-                }
-            }
-            e.HasMorePages = printRowIndex < rows.Count;
-        }
         private void btnPrint_Click(object sender, EventArgs e)
         {
+            if (!dgv_sales.EndEdit())
+            {
+                return;
+            }
             if (dgv_sales.Rows.Count == 0)
             {
                 MessageBox.Show("There are no items to print. Add at least one item first.", "Print", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            PrintDialog printDialog = new PrintDialog();
-            printDialog.Document = printDocument;
-
-            if (printDialog.ShowDialog() == DialogResult.OK)
+            if (PrinterSettings.InstalledPrinters.Count == 0)
             {
-                printDocument.Print();
+                MessageBox.Show("No printer is installed on this PC. Install a printer, or \"Microsoft Print to PDF\", to preview and print invoices.", "Print", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+            using (InvoicePrintDocument document = new InvoicePrintDocument(BuildPrintData()))
+            using (PrintPreviewForm preview = new PrintPreviewForm(document))
+            {
+                preview.ShowDialog(this);
+            }
+        }
+        private InvoicePrintData BuildPrintData()
+        {
+            bool draft = btnSave.Enabled;
+            InvoicePrintData data = new InvoicePrintData
+            {
+                InvoiceNo = txtTransNo.Text.Trim(),
+                Date = draft || invoiceDate == null ? DateTime.Now : invoiceDate.Value,
+                IsDraft = draft,
+                CustomerId = comboCustId.SelectedItem?.ToString() ?? string.Empty,
+                CustomerName = txtcustname.Text.Trim(),
+                CustomerAddress = txtcustaddresss.Text.Trim(),
+            };
+            decimal sum = 0;
+            foreach (DataGridViewRow row in dgv_sales.Rows)
+            {
+                decimal amount = ParseAmount(row.Cells[5].Value);
+                sum += amount;
+                data.Lines.Add(new InvoicePrintLine(
+                    row.Cells[0].Value?.ToString(),
+                    row.Cells[1].Value?.ToString(),
+                    row.Cells[2].Value?.ToString(),
+                    ParseAmount(row.Cells[3].Value),
+                    ParseAmount(row.Cells[4].Value),
+                    amount));
+            }
+            decimal total;
+            data.Total = decimal.TryParse(txtTotalSum.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out total) ? total : sum;
+            return data;
+        }
+        private static decimal ParseAmount(object value)
+        {
+            decimal number;
+            return decimal.TryParse(Convert.ToString(value), NumberStyles.Number, CultureInfo.CurrentCulture, out number) ? number : 0m;
         }
     }
 }
